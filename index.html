@@ -116,9 +116,21 @@
         /* ESTILOS DA FOTO */
         .foto-container { display: flex; flex-direction: column; align-items: center; margin-bottom: 15px; padding: 10px; border: 1px dashed #ccc; border-radius: 5px; background: #fafafa; }
         .foto-preview { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; background-color: #eee; margin-bottom: 10px; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .btn-foto { background: #34495e; color: white; padding: 5px 15px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; display: inline-block; }
+        
+        .botoes-foto-wrapper { display: flex; gap: 10px; justify-content: center; width: 100%; flex-wrap: wrap; }
+        .btn-foto { background: #34495e; color: white; padding: 6px 15px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 5px; border: none;}
+        .btn-foto:hover { background: #2c3e50; }
+        .btn-webcam { background: #d35400; }
+        
         input[type="file"] { display: none; }
         .avatar-table { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #ddd; vertical-align: middle; margin-right: 10px; }
+
+        /* Estilo da Webcam */
+        #webcam-container { display: none; flex-direction: column; align-items: center; gap: 10px; margin-top: 10px; width: 100%; max-width: 320px; }
+        #webcam-video { width: 100%; border-radius: 8px; background: #000; border: 2px solid #333; transform: scaleX(-1); } /* Espelhar video */
+        .webcam-controls { display: flex; gap: 10px; width: 100%; }
+        .btn-snap { background: #27ae60; color: white; flex: 1; border: none; padding: 8px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-close-cam { background: #c0392b; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
@@ -226,10 +238,23 @@
                         
                         <div class="foto-container">
                             <img id="vis-preview" class="foto-preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23eee'/%3E%3Cpath fill='%23ccc' d='M50 50c-13.8 0-25-11.2-25-25s11.2-25 25-25 25 11.2 25 25-11.2 25-25 25zm0 10c16.7 0 50 8.3 50 25v15H0v-15c0-16.7 33.3-25 50-25z'/%3E%3C/svg%3E">
-                            <label for="vis-foto-input" class="btn-foto"><i class="fas fa-camera"></i> Tirar Foto / Enviar</label>
+                            
+                            <div id="webcam-container">
+                                <video id="webcam-video" autoplay playsinline></video>
+                                <div class="webcam-controls">
+                                    <button type="button" id="btn-snap" class="btn-snap"><i class="fas fa-camera"></i> Capturar</button>
+                                    <button type="button" id="btn-close-cam" class="btn-close-cam"><i class="fas fa-times"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="botoes-foto-wrapper" id="btns-foto-originais">
+                                <label for="vis-foto-input" class="btn-foto"><i class="fas fa-upload"></i> Arquivo / Celular</label>
+                                <button type="button" id="btn-open-webcam" class="btn-foto btn-webcam"><i class="fas fa-video"></i> Webcam</button>
+                            </div>
+
                             <input type="file" id="vis-foto-input" accept="image/*" capture="environment">
                             <input type="hidden" id="vis-foto-base64">
-                            <small style="margin-top:5px; color:#666; font-size:0.75rem;">Clique para capturar</small>
+                            <small style="margin-top:5px; color:#666; font-size:0.75rem;">Adicione uma foto para identificação</small>
                         </div>
 
                         <div class="form-grid">
@@ -629,8 +654,74 @@
             } 
         }
 
-        // --- 2. VISITANTES E FOTOS ---
+        // --- 2. VISITANTES, FOTOS E WEBCAM ---
         
+        // --- LÓGICA DE WEBCAM ---
+        const videoElement = document.getElementById('webcam-video');
+        const webcamContainer = document.getElementById('webcam-container');
+        const btnsFotoWrapper = document.getElementById('btns-foto-originais');
+        const imgPreview = document.getElementById('vis-preview');
+        let stream = null;
+
+        document.getElementById('btn-open-webcam').addEventListener('click', async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                videoElement.srcObject = stream;
+                
+                // Ajusta UI
+                webcamContainer.style.display = 'flex';
+                btnsFotoWrapper.style.display = 'none';
+                imgPreview.style.display = 'none';
+            } catch (err) {
+                alert("Não foi possível acessar a webcam. Verifique as permissões.");
+                console.error(err);
+            }
+        });
+
+        function fecharWebcam() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            webcamContainer.style.display = 'none';
+            btnsFotoWrapper.style.display = 'flex';
+            imgPreview.style.display = 'block';
+        }
+
+        document.getElementById('btn-close-cam').addEventListener('click', fecharWebcam);
+
+        document.getElementById('btn-snap').addEventListener('click', () => {
+            if (!stream) return;
+            
+            const canvas = document.createElement('canvas');
+            // Redimensionamento para otimizar espaço
+            const maxWidth = 500;
+            const scale = maxWidth / videoElement.videoWidth;
+            const newWidth = (videoElement.videoWidth > maxWidth) ? maxWidth : videoElement.videoWidth;
+            const newHeight = (videoElement.videoWidth > maxWidth) ? videoElement.videoHeight * scale : videoElement.videoHeight;
+            
+            canvas.width = newWidth;
+            canvas.height = newHeight;
+            
+            const ctx = canvas.getContext('2d');
+            // Se usou CSS para espelhar, precisa desenhar espelhado ou normal. 
+            // O CSS só afeta visualização. O drawImage pega cru.
+            // Para ficar intuitivo (espelho), vamos inverter no canvas:
+            ctx.translate(newWidth, 0);
+            ctx.scale(-1, 1);
+            
+            ctx.drawImage(videoElement, 0, 0, newWidth, newHeight);
+            
+            const base64String = canvas.toDataURL('image/jpeg', 0.7);
+            
+            document.getElementById('vis-foto-base64').value = base64String;
+            document.getElementById('vis-preview').src = base64String;
+            
+            fecharWebcam();
+        });
+
+        // --- FIM LÓGICA WEBCAM ---
+
         const fileInput = document.getElementById('vis-foto-input');
         fileInput.addEventListener('change', function(event) {
             const file = event.target.files[0];
@@ -721,6 +812,9 @@
             document.getElementById('btn-cancel-vis').style.display = "block";
             const selStat = document.getElementById('vis-status-edit'); selStat.style.display="block"; selStat.value = v.status;
             document.getElementById('visitantes').scrollIntoView({behavior:'smooth'});
+            
+            // Garante que a webcam esteja fechada ao editar
+            fecharWebcam();
         }
         
         window.deletarVisitante = function(id) {
@@ -740,6 +834,7 @@
             document.getElementById('btn-cancel-vis').style.display = "none"; document.getElementById('vis-status-edit').style.display="none";
             document.getElementById('vis-preview').src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23eee'/%3E%3Cpath fill='%23ccc' d='M50 50c-13.8 0-25-11.2-25-25s11.2-25 25-25 25 11.2 25 25-11.2 25-25 25zm0 10c16.7 0 50 8.3 50 25v15H0v-15c0-16.7 33.3-25 50-25z'/%3E%3C/svg%3E";
             document.getElementById('vis-foto-base64').value = "";
+            fecharWebcam();
         }
 
         window.renderizarApenasVisitantes = function() {
@@ -906,7 +1001,6 @@
                 data: document.getElementById('evento-data').value,
                 publico: parseInt(document.getElementById('evento-publico').value) || 0,
                 local: document.getElementById('evento-local').value,
-                // Novos campos capturados
                 coffee: document.getElementById('evento-coffee').checked,
                 obs: document.getElementById('evento-obs').value
             };
