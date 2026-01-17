@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <link rel="icon" type="image/png" href="favicon.png">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sistema de Gestão | Portaria e Zeladoria</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -49,7 +49,7 @@
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }
         
         body {
             font-family: 'Inter', sans-serif;
@@ -436,14 +436,9 @@
             font-size: 0.7rem; font-weight: 600; color: white;
             display: inline-block; text-align: center; min-width: 80px;
         }
-        .bg-pendente { background-color: var(--warning); }
-        .bg-andamento { background-color: var(--accent); }
-        .bg-concluido { background-color: var(--success); }
-        .bg-estacionado { background-color: var(--estacionado); }
-        .bg-saiu { background-color: #94a3b8; }
-        .bg-visitante-ativo { background-color: var(--recepcao); }
-        .bg-interno { background-color: var(--primary); }
-        .bg-externo { background-color: var(--evento); }
+        .bg-pendente { background-color: var(--warning); } .bg-andamento { background-color: var(--accent); } .bg-concluido { background-color: var(--success); }
+        .bg-estacionado { background-color: var(--estacionado); } .bg-saiu { background-color: #94a3b8; } .bg-visitante-ativo { background-color: var(--recepcao); }
+        .bg-interno { background-color: var(--primary); } .bg-externo { background-color: var(--evento); }
 
         .time-badge {
             background: #f1f5f9; color: var(--text-secondary);
@@ -545,7 +540,7 @@
                     <label for="login-user">Usuário</label>
                     <div class="input-wrapper">
                         <i class="fas fa-user input-icon"></i>
-                        <input type="text" id="login-user" class="login-input" placeholder="Digite seu usuário" onkeyup="checkEnter(event)" autocomplete="username">
+                        <input type="text" id="login-user" class="login-input" placeholder="Digite seu usuário" onkeyup="checkEnter(event)" autocomplete="username" autocapitalize="none" autocorrect="off">
                     </div>
                 </div>
 
@@ -553,7 +548,7 @@
                     <label for="login-pass">Senha</label>
                     <div class="input-wrapper">
                         <i class="fas fa-lock input-icon"></i>
-                        <input type="password" id="login-pass" class="login-input" placeholder="Digite sua senha" onkeyup="checkEnter(event)" autocomplete="current-password">
+                        <input type="password" id="login-pass" class="login-input" placeholder="Digite sua senha" onkeyup="checkEnter(event)" autocomplete="current-password" autocapitalize="none" autocorrect="off">
                         <button type="button" class="toggle-pass" onclick="togglePassword()" tabindex="-1">
                             <i class="far fa-eye" id="eye-icon"></i>
                         </button>
@@ -947,14 +942,16 @@
         window.checkEnter = function(e) { if(e.key === 'Enter') window.fazerLogin(); }
         
         window.fazerLogin = function() {
-            const userKey = document.getElementById('login-user').value.toLowerCase();
-            const pass = document.getElementById('login-pass').value;
+            // CORREÇÃO MOBILE: Remove espaços e converte para minusculo
+            const userKey = document.getElementById('login-user').value.trim().toLowerCase();
+            const pass = document.getElementById('login-pass').value.trim();
+            
             if (CREDENCIAIS[userKey] && CREDENCIAIS[userKey].pass === pass) {
                 currentUserRole = CREDENCIAIS[userKey].role;
                 localStorage.setItem('zeladoria_user', JSON.stringify(CREDENCIAIS[userKey]));
                 iniciarSistema(CREDENCIAIS[userKey]);
             } else {
-                document.getElementById('login-error').style.display = 'flex'; // Exibe com flexbox
+                document.getElementById('login-error').style.display = 'flex';
             }
         }
 
@@ -962,10 +959,12 @@
             document.getElementById('login-overlay').style.display = 'none';
             document.getElementById('app-content').style.display = 'flex';
             document.getElementById('user-display').innerText = `Olá, ${userData.nome}`;
+            
             const tDemandas = document.getElementById('tab-demandas');
             const tVisitantes = document.getElementById('tab-visitantes');
             const tVeiculos = document.getElementById('tab-veiculos');
             const tEventos = document.getElementById('tab-eventos');
+
             [tDemandas, tVisitantes, tVeiculos, tEventos].forEach(t => t.classList.remove('hidden-tab'));
 
             // CORREÇÃO: Força a atualização da interface com as permissões corretas
@@ -1140,7 +1139,7 @@
              } 
          }
 
-        // --- 2. VISITANTES ---
+        /* --- 2. VISITANTES --- */
         const videoElement = document.getElementById('webcam-video');
         const webcamContainer = document.getElementById('webcam-container');
         const btnsFotoWrapper = document.getElementById('btns-foto-originais');
@@ -1156,7 +1155,6 @@
         const fileInput = document.getElementById('vis-foto-input');
         fileInput.addEventListener('change', function(event) { const file = event.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = function(e) { const img = new Image(); img.onload = function() { const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d'); const maxWidth = 500; const scale = maxWidth / img.width; const newWidth = (img.width > maxWidth) ? maxWidth : img.width; const newHeight = (img.width > maxWidth) ? img.height * scale : img.height; canvas.width = newWidth; canvas.height = newHeight; ctx.drawImage(img, 0, 0, newWidth, newHeight); const base64String = canvas.toDataURL('image/jpeg', 0.7); document.getElementById('vis-foto-base64').value = base64String; document.getElementById('vis-preview').src = base64String; }; img.src = e.target.result; }; reader.readAsDataURL(file); } });
 
-        // --- LÓGICA DE PRESERVAÇÃO DE DADOS AO EDITAR VISITANTES ---
         const formVis = document.getElementById('form-visitante');
         formVis.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -1184,17 +1182,13 @@
                     novoVisitante.foto = ant.foto;
                 }
                 
-                // LÓGICA CORRIGIDA (IGUAL GARAGEM):
+                // LÓGICA DE PRESERVAÇÃO
                 if (novoVisitante.status === 'Ativo') {
-                    // Se voltou para Ativo, limpa saída
                     novoVisitante.saida = null;
                 } else {
-                    // Se status é 'Saiu'
                     if (ant && ant.saida) {
-                        // Se já tinha saída, mantém a original
                         novoVisitante.saida = ant.saida;
                     } else {
-                        // Se não tinha, marca agora
                         novoVisitante.saida = new Date().toISOString();
                     }
                 }
@@ -1243,7 +1237,7 @@
         }
         window.baixaVisitante = function(id) { if(confirm('Confirmar saída do visitante?')) { update(ref(db, 'visitantes/' + id), { status: 'Saiu', saida: new Date().toISOString() }); } }
 
-        // --- 3. VEICULOS ---
+        /* --- 3. VEICULOS --- */
         window.atualizarLabels = function() {
             const tipo = document.querySelector('input[name="tipoFluxo"]:checked').value; const btn = document.getElementById('btn-submit-veiculo');
             if (!document.getElementById('veiculo-id-edit').value) btn.innerText = "Registrar Entrada";
@@ -1299,7 +1293,7 @@
         }
         window.baixaVeiculo = function(id) { const km = prompt("KM de Saída (Opcional):", "0"); if (km !== null) { update(ref(db, 'frota/' + id), { kmFinal: km, horaFinal: new Date().toISOString(), status: 'Fechado' }); } }
 
-        // --- 4. EVENTOS ---
+        /* --- 4. EVENTOS --- */
         const formEvento = document.getElementById('form-evento');
         formEvento.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -1340,18 +1334,20 @@
                 if (currentUserRole === 'admin') {
                     btnExcluir = `<button onclick="deletarEvento('${ev.id}')" class="action-btn btn-delete"><i class="fas fa-trash"></i></button>`;
                 }
-
                 tr.innerHTML = `<td>${formatarData(ev.data)}</td><td>${badge}</td><td><strong>${ev.nome}</strong>${iconCoffee}<br><small style="color:var(--text-secondary)">${ev.local}</small>${obsText}</td><td>${ev.organizador}</td><td><i class="fas fa-user"></i> ${ev.publico}</td><td style="min-width:100px"><button onclick="editarEvento('${ev.id}')" class="action-btn btn-edit"><i class="fas fa-pen"></i></button>${btnExcluir}</td>`;
                 tbody.appendChild(tr);
             });
         }
 
+        /* EXPORTAÇÃO */
         window.exportarParaExcel = function(tipo) {
             let dadosRaw = []; let nomeArquivo = ""; let dadosFormatados = [];
+            
             if (tipo === 'demandas') { dadosRaw = demandas; nomeArquivo = "Relatorio_Demandas.xlsx"; dadosFormatados = dadosRaw.map(d => ({ "Data": formatarData(d.data), "Prioridade": d.prioridade, "Título": d.titulo, "Setor": d.setor, "Solicitante": d.solicitante, "Status": d.status, "Conclusão": d.dataFim ? formatarDataHora(d.dataFim) : "-" })); } 
             else if (tipo === 'visitantes') { dadosRaw = visitantes; nomeArquivo = "Relatorio_Visitantes.xlsx"; dadosFormatados = dadosRaw.map(v => ({ "Status": v.status, "Nome": v.nome, "Documento": v.doc, "Empresa": v.empresa, "Contato": v.contato, "Responsável": v.responsavel, "Finalidade": v.finalidade, "Entrada": formatarDataHora(v.entrada), "Saída": v.saida ? formatarDataHora(v.saida) : "-" })); }
             else if (tipo === 'veiculos') { dadosRaw = frota; nomeArquivo = "Relatorio_Garagem.xlsx"; dadosFormatados = dadosRaw.map(f => ({ "Status": f.status, "Tipo": f.tipo, "Condutor": f.motorista, "Veículo": f.carro, "Setor/Destino": f.setor, "Entrada": formatarDataHora(f.horaInicial), "KM Entrada": f.kmInicial, "Saída": f.horaFinal ? formatarDataHora(f.horaFinal) : "-", "KM Saída": f.kmFinal || "-" })); }
             else if (tipo === 'eventos') { dadosRaw = eventos; nomeArquivo = "Relatorio_Eventos.xlsx"; dadosFormatados = dadosRaw.map(e => ({ "Data": formatarData(e.data), "Evento": e.nome, "Tipo": e.tipo, "Organizador": e.organizador, "Local": e.local, "Público Est.": e.publico, "Coffee Break": e.coffee ? "Sim" : "Não", "Observações": e.obs })); }
+            
             if (dadosFormatados.length === 0) { alert("Não há dados para exportar nesta tabela."); return; }
             const ws = XLSX.utils.json_to_sheet(dadosFormatados); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Dados"); XLSX.writeFile(wb, nomeArquivo);
         }
