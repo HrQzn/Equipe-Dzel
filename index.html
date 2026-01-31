@@ -37,6 +37,7 @@
             --evento: #ec4899;        /* Rosa */
             --excel: #16a34a;         /* Verde Excel */
             --coffee: #854d0e;        /* Marrom café */
+            --ocorrencia: #dc2626;    /* Vermelho Alerta (NOVO) */
 
             /* Dimensões e Efeitos */
             --sidebar-width: 260px;
@@ -381,6 +382,7 @@
         .card-recepcao { border-left-color: var(--recepcao); } .card-recepcao .metric-icon { color: var(--recepcao); }
         .card-estacionado { border-left-color: var(--estacionado); } .card-estacionado .metric-icon { color: var(--estacionado); }
         .card-evt-externo { border-left-color: var(--evento); } .card-evt-externo .metric-icon { color: var(--evento); }
+        .card-ocorrencia { border-left-color: var(--ocorrencia); } .card-ocorrencia .metric-icon { color: var(--ocorrencia); }
 
         /* Forms */
         .form-grid {
@@ -439,6 +441,7 @@
         .bg-pendente { background-color: var(--warning); } .bg-andamento { background-color: var(--accent); } .bg-concluido { background-color: var(--success); }
         .bg-estacionado { background-color: var(--estacionado); } .bg-saiu { background-color: #94a3b8; } .bg-visitante-ativo { background-color: var(--recepcao); }
         .bg-interno { background-color: var(--primary); } .bg-externo { background-color: var(--evento); }
+        .bg-baixa { background-color: var(--success); } .bg-media { background-color: var(--warning); } .bg-alta { background-color: #f97316; } .bg-critica { background-color: var(--ocorrencia); }
 
         .time-badge {
             background: #f1f5f9; color: var(--text-secondary);
@@ -595,6 +598,10 @@
                 <button id="tab-eventos" class="nav-item" onclick="switchTab('eventos'); closeMobileSidebar()">
                     <i class="fas fa-calendar-alt"></i>
                     <span>Eventos</span>
+                </button>
+                <button id="tab-ocorrencias" class="nav-item" onclick="switchTab('ocorrencias'); closeMobileSidebar()">
+                    <i class="fas fa-triangle-exclamation"></i>
+                    <span>Ocorrências</span>
                 </button>
             </nav>
 
@@ -860,7 +867,52 @@
                             </div>
                         </div>
                     </section>
-                    
+
+                    <section id="ocorrencias" class="section">
+                        <div class="dashboard-panel">
+                            <div class="metric-card card-total"><div class="metric-info"><h3>Total</h3><p id="dash-oco-total">...</p></div><i class="fas fa-clipboard-list metric-icon"></i></div>
+                            <div class="metric-card card-ocorrencia"><div class="metric-info"><h3>Abertas</h3><p id="dash-oco-abertas">...</p></div><i class="fas fa-exclamation-circle metric-icon"></i></div>
+                            <div class="metric-card card-pendente"><div class="metric-info"><h3>Em Tratativa</h3><p id="dash-oco-tratativa">...</p></div><i class="fas fa-tools metric-icon"></i></div>
+                            <div class="metric-card card-concluido"><div class="metric-info"><h3>Encerradas</h3><p id="dash-oco-encerradas">...</p></div><i class="fas fa-check-circle metric-icon"></i></div>
+                        </div>
+
+                        <div class="card">
+                            <h2 id="titulo-form-ocorrencia"><i class="fas fa-exclamation-triangle" style="color:var(--ocorrencia)"></i> Registrar Ocorrência</h2>
+                            <form id="form-ocorrencia">
+                                <input type="hidden" id="ocorrencia-id-edit" value="">
+                                <div class="form-grid">
+                                    <div><label>Unidade / Prédio</label><input type="text" id="oco-unidade" required></div>
+                                    <div><label>Local / Setor</label><input type="text" id="oco-local" required></div>
+                                    <div><label>Categoria</label><select id="oco-categoria"><option value="Segurança">Segurança</option><option value="Manutenção">Manutenção</option><option value="Limpeza">Limpeza</option><option value="Portaria">Portaria</option><option value="Recepção">Recepção</option><option value="Outros">Outros</option></select></div>
+                                    <div><label>Gravidade</label><select id="oco-gravidade"><option value="Baixa">Baixa</option><option value="Média">Média</option><option value="Alta">Alta</option><option value="Crítica">Crítica</option></select></div>
+                                    <div><label>Data/Hora</label><input type="datetime-local" id="oco-data" required></div>
+                                    <div><label>Responsável</label><input type="text" id="oco-responsavel" required></div>
+                                    <div style="grid-column: 1/-1"><label>Descrição Detalhada</label><textarea id="oco-descricao" rows="3" required></textarea></div>
+                                    <div id="div-status-oco" style="display:none"><label>Status Atual</label><select id="oco-status-edit"><option value="Aberta">Aberta</option><option value="Em Tratativa">Em Tratativa</option><option value="Encerrada">Encerrada</option></select></div>
+                                </div>
+                                <div class="btn-container">
+                                    <button type="submit" class="btn-primary" id="btn-submit-oco" style="background-color:var(--ocorrencia)">Registrar Ocorrência</button>
+                                    <button type="button" class="btn-cancel" id="btn-cancel-oco" onclick="cancelarEdicaoOcorrencia()">Cancelar</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="card">
+                            <div class="filter-container">
+                                <div class="filter-group"><label>Mês:</label><input type="month" id="filtro-mes-oco" onchange="window.renderizarApenasOcorrencias()"></div>
+                                <div class="filter-group"><label>Buscar:</label><input type="text" id="filtro-busca-oco" onkeyup="window.renderizarApenasOcorrencias()" placeholder="Local, Desc..."></div>
+                                <div class="filter-group"><label>Status:</label><select id="filtro-status-oco" onchange="window.renderizarApenasOcorrencias()"><option value="">Todos</option><option value="Aberta">Aberta</option><option value="Em Tratativa">Em Tratativa</option><option value="Encerrada">Encerrada</option></select></div>
+                                <button onclick="window.exportarParaExcel('ocorrencias')" class="btn-excel"><i class="fas fa-file-excel"></i> Exportar</button>
+                            </div>
+                            <div class="table-container">
+                                <table id="tabela-ocorrencias">
+                                    <thead><tr><th>Data/Hora</th><th>Gravidade</th><th>Categoria / Local</th><th>Descrição</th><th>Status</th><th>Tempo</th><th>Ações</th></tr></thead>
+                                    <tbody><tr><td colspan="7" class="loading">Carregando ocorrências...</td></tr></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+
                 </main>
             </div>
         </div>
@@ -891,6 +943,7 @@
         let frota = [];
         let visitantes = [];
         let eventos = [];
+        let ocorrencias = [];
 
         // --- UI CONTROL ---
         window.toggleSidebar = function() {
@@ -964,19 +1017,47 @@
             const tVisitantes = document.getElementById('tab-visitantes');
             const tVeiculos = document.getElementById('tab-veiculos');
             const tEventos = document.getElementById('tab-eventos');
+            const tOcorrencias = document.getElementById('tab-ocorrencias');
 
-            [tDemandas, tVisitantes, tVeiculos, tEventos].forEach(t => t.classList.remove('hidden-tab'));
+            // 1. Resetar: Remove ocultação e estilos manuais de todas as abas inicialmente
+            [tDemandas, tVisitantes, tVeiculos, tEventos, tOcorrencias].forEach(t => {
+                t.classList.remove('hidden-tab');
+                t.style.display = ''; // Limpa o display:flex forçado anteriormente
+            });
 
-            // CORREÇÃO: Força a atualização da interface com as permissões corretas
+            // 2. Renderizar dados
             window.renderizarApenasDemandas();
             window.renderizarApenasVisitantes();
             window.renderizarApenasFrota();
             window.renderizarApenasEventos();
+            window.renderizarApenasOcorrencias();
 
-            if (userData.role === 'zeladoria') { tVisitantes.classList.add('hidden-tab'); tVeiculos.classList.add('hidden-tab'); window.switchTab('demandas'); } 
-            else if (userData.role === 'portaria') { tDemandas.classList.add('hidden-tab'); tEventos.classList.add('hidden-tab'); window.switchTab('veiculos'); } 
-            else if (userData.role === 'recepcao') { tDemandas.classList.add('hidden-tab'); tVeiculos.classList.add('hidden-tab'); tEventos.classList.add('hidden-tab'); window.switchTab('visitantes'); } 
-            else { if(!document.querySelector('.section.active')) window.switchTab('demandas'); }
+            // 3. Regra de Ouro: Se NÃO for admin, esconde Ocorrências imediatamente
+            if (userData.role !== 'admin') {
+                tOcorrencias.classList.add('hidden-tab');
+            }
+
+            // 4. Regras Específicas de cada Perfil
+            if (userData.role === 'zeladoria') { 
+                tVisitantes.classList.add('hidden-tab'); 
+                tVeiculos.classList.add('hidden-tab'); 
+                window.switchTab('demandas'); 
+            } 
+            else if (userData.role === 'portaria') { 
+                tDemandas.classList.add('hidden-tab'); 
+                tEventos.classList.add('hidden-tab'); 
+                window.switchTab('veiculos'); 
+            } 
+            else if (userData.role === 'recepcao') { 
+                tDemandas.classList.add('hidden-tab'); 
+                tVeiculos.classList.add('hidden-tab'); 
+                tEventos.classList.add('hidden-tab'); 
+                window.switchTab('visitantes'); 
+            } 
+            else { 
+                // Admin cai aqui (vê tudo, pois nenhuma aba foi escondida para ele)
+                if(!document.querySelector('.section.active')) window.switchTab('demandas'); 
+            }
         }
 
         window.logout = function() { localStorage.removeItem('zeladoria_user'); location.reload(); }
@@ -992,6 +1073,7 @@
         document.getElementById('evento-data').valueAsDate = new Date();
         document.getElementById('vis-entrada').value = getLocalISO();
         document.getElementById('veiculo-hora-saida').value = getLocalISO();
+        document.getElementById('oco-data').value = getLocalISO();
 
         window.switchTab = function(tabId) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -1132,12 +1214,12 @@
             finally { if(btnAlvo) { btnAlvo.disabled = false; btnAlvo.innerHTML = '<i class="fas fa-arrow-right"></i>'; } }
         };
 
-        window.deletarDemanda = function(id) { 
-             if(confirm('Excluir?')) { 
-                 remove(ref(db, 'demandas/' + id));
-                if(document.getElementById('demanda-id-edit').value == id) cancelarEdicaoDemanda(); 
-             } 
-         }
+        window.deletarDemanda = function(id) {  
+            if(confirm('Excluir?')) {  
+                remove(ref(db, 'demandas/' + id));
+                if(document.getElementById('demanda-id-edit').value == id) cancelarEdicaoDemanda();
+            }  
+        }
 
         /* --- 2. VISITANTES --- */
         const videoElement = document.getElementById('webcam-video');
@@ -1313,28 +1395,72 @@
             const radios = document.getElementsByName('tipoEvento'); for(let i=0; i<radios.length; i++) { if(radios[i].value === ev.tipo) radios[i].checked = true; }
             document.getElementById('titulo-form-evento').innerHTML = '<i class="fas fa-edit"></i> Editando Evento'; const btn = document.getElementById('btn-submit-evento'); btn.innerText = "Salvar Alterações"; btn.style.backgroundColor = "var(--edit)"; document.getElementById('btn-cancel-evento').style.display = "block"; document.getElementById('eventos').scrollIntoView({behavior: 'smooth'});
         }
-        window.cancelarEdicaoEvento = function() { document.getElementById('evento-id-edit').value = ""; formEvento.reset(); document.getElementById('evento-data').valueAsDate = new Date(); document.getElementById('evento-coffee').checked = false; document.getElementById('evento-obs').value = ""; document.getElementById('titulo-form-evento').innerHTML = '<i class="fas fa-calendar-plus" style="color:var(--evento)"></i> Registrar Evento'; const btn = document.getElementById('btn-submit-evento'); btn.innerText = "Salvar Evento"; btn.style.backgroundColor = "var(--evento)"; document.getElementById('btn-cancel-evento').style.display = "none"; }
-        
+        window.cancelarEdicaoEvento = function() { document.getElementById('evento-id-edit').value = ""; formEvento.reset(); document.getElementById('evento-data').valueAsDate = new Date(); document.getElementById('evento-coffee').checked = false; document.getElementById('evento-obs').value = ""; document.getElementById('titulo-form-evento').innerHTML = '<i class="fas fa-calendar-plus" style="color:var(--evento)"></i> Registrar Evento'; const btn = document.getElementById('btn-submit-evento'); btn.innerText = "Salvar Evento"; btn.style.backgroundColor = "var(--evento)"; document.getElementById('btn-cancel-evento').style.display = "none"; }        
         window.deletarEvento = function(id) { 
             if(confirm('Tem certeza que deseja EXCLUIR este evento?')) { 
                 remove(ref(db, 'eventos/' + id)); 
                 if(document.getElementById('evento-id-edit').value == id) cancelarEdicaoEvento(); 
             } 
-        }
-        
+        }        
         window.renderizarApenasEventos = function() {
             const mes = document.getElementById('filtro-mes-evento').value; const busca = document.getElementById('filtro-busca-evento').value.toLowerCase();
             const lista = eventos.filter(ev => { const bData = !mes || ev.data.startsWith(mes); const bTexto = !busca || (ev.nome + ev.organizador + ev.local).toLowerCase().includes(busca); return bData && bTexto; });
             document.getElementById('dash-eventos-qtd').innerText = lista.length; const qtdInterno = lista.filter(e => e.tipo === 'Interno').length; const qtdExterno = lista.filter(e => e.tipo === 'Externo').length; document.getElementById('dash-eventos-interno').innerText = qtdInterno; document.getElementById('dash-eventos-externo').innerText = qtdExterno; const totalPublico = lista.reduce((sum, ev) => sum + (parseInt(ev.publico) || 0), 0); document.getElementById('dash-eventos-publico').innerText = totalPublico;
             const tbody = document.querySelector('#tabela-eventos tbody'); tbody.innerHTML = '';
             lista.forEach(ev => {
-                const tr = document.createElement('tr'); const badgeClass = ev.tipo === 'Interno' ? 'bg-interno' : 'bg-externo'; const badge = `<span class="badge ${badgeClass}">${ev.tipo}</span>`; const iconCoffee = ev.coffee ? '<i class="fas fa-coffee" title="Terá Coffee Break" style="color:var(--coffee); margin-left:5px"></i>' : ''; const obsText = ev.obs ? `<div style="font-size:0.75rem; color:#6b7280; font-style:italic; margin-top:4px; padding-top:4px; border-top:1px dashed #e5e7eb"><i class="fas fa-comment-alt" style="font-size:0.7rem"></i> ${ev.obs}</div>` : ''; 
-                
+                const tr = document.createElement('tr'); const badgeClass = ev.tipo === 'Interno' ? 'bg-interno' : 'bg-externo'; const badge = `<span class="badge ${badgeClass}">${ev.tipo}</span>`; const iconCoffee = ev.coffee ? '<i class="fas fa-coffee" title="Terá Coffee Break" style="color:var(--coffee); margin-left:5px"></i>' : ''; const obsText = ev.obs ? `<div style="font-size:0.75rem; color:#6b7280; font-style:italic; margin-top:4px; padding-top:4px; border-top:1px dashed #e5e7eb"><i class="fas fa-comment-alt" style="font-size:0.7rem"></i> ${ev.obs}</div>` : '';                 
                 let btnExcluir = ''; 
                 if (currentUserRole === 'admin') {
                     btnExcluir = `<button onclick="deletarEvento('${ev.id}')" class="action-btn btn-delete"><i class="fas fa-trash"></i></button>`;
                 }
                 tr.innerHTML = `<td>${formatarData(ev.data)}</td><td>${badge}</td><td><strong>${ev.nome}</strong>${iconCoffee}<br><small style="color:var(--text-secondary)">${ev.local}</small>${obsText}</td><td>${ev.organizador}</td><td><i class="fas fa-user"></i> ${ev.publico}</td><td style="min-width:100px"><button onclick="editarEvento('${ev.id}')" class="action-btn btn-edit"><i class="fas fa-pen"></i></button>${btnExcluir}</td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        /* --- 5. OCORRÊNCIAS --- */
+        const formOcorrencia = document.getElementById('form-ocorrencia');
+        formOcorrencia.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const idEdicao = document.getElementById('ocorrencia-id-edit').value;
+            const id = idEdicao || Date.now();
+            const statusNovo = idEdicao ? document.getElementById('oco-status-edit').value : 'Aberta';
+            const novaOcorrencia = { id: id, unidade: document.getElementById('oco-unidade').value.toUpperCase(), local: document.getElementById('oco-local').value.toUpperCase(), categoria: document.getElementById('oco-categoria').value, gravidade: document.getElementById('oco-gravidade').value, data: document.getElementById('oco-data').value, responsavel: document.getElementById('oco-responsavel').value.toUpperCase(), descricao: document.getElementById('oco-descricao').value.toUpperCase(), status: statusNovo, dataEncerramento: null };
+            if(idEdicao) {
+                const ant = ocorrencias.find(o => String(o.id) === String(id));
+                if(statusNovo === 'Encerrada' && (!ant || ant.status !== 'Encerrada')) novaOcorrencia.dataEncerramento = new Date().toISOString();
+                else if(ant && ant.dataEncerramento && statusNovo === 'Encerrada') novaOcorrencia.dataEncerramento = ant.dataEncerramento;
+            }
+            set(ref(db, 'ocorrencias/' + id), novaOcorrencia).then(() => cancelarEdicaoOcorrencia()).catch(e => alert(e));
+        });
+        onValue(ref(db, 'ocorrencias'), (snap) => {
+            const data = snap.val();
+            ocorrencias = data ? Object.keys(data).map(k => ({...data[k], id: k})) : [];
+            ocorrencias.sort((a,b) => new Date(b.data) - new Date(a.data)); window.renderizarApenasOcorrencias();
+        });
+        window.editarOcorrencia = function(id) {
+            const o = ocorrencias.find(i => String(i.id) === String(id)); if(!o) return;
+            document.getElementById('ocorrencia-id-edit').value = o.id; document.getElementById('oco-unidade').value = o.unidade; document.getElementById('oco-local').value = o.local; document.getElementById('oco-categoria').value = o.categoria; document.getElementById('oco-gravidade').value = o.gravidade; document.getElementById('oco-data').value = o.data; document.getElementById('oco-responsavel').value = o.responsavel; document.getElementById('oco-descricao').value = o.descricao;
+            document.getElementById('titulo-form-ocorrencia').innerHTML = '<i class="fas fa-edit"></i> Editando Ocorrência'; document.getElementById('btn-submit-oco').innerText = "Salvar Alterações"; document.getElementById('btn-cancel-oco').style.display = "block"; document.getElementById('div-status-oco').style.display = "block"; document.getElementById('oco-status-edit').value = o.status;
+            document.getElementById('ocorrencias').scrollIntoView({behavior:'smooth'});
+        }
+        window.cancelarEdicaoOcorrencia = function() {
+            document.getElementById('ocorrencia-id-edit').value = ""; formOcorrencia.reset(); document.getElementById('oco-data').value = getLocalISO();
+            document.getElementById('titulo-form-ocorrencia').innerHTML = '<i class="fas fa-exclamation-triangle" style="color:var(--ocorrencia)"></i> Registrar Ocorrência'; document.getElementById('btn-submit-oco').innerText = "Registrar Ocorrência"; document.getElementById('btn-cancel-oco').style.display = "none"; document.getElementById('div-status-oco').style.display = "none";
+        }
+        window.deletarOcorrencia = function(id) { if(currentUserRole !== 'admin') { alert('Apenas administradores podem excluir.'); return; } if(confirm('Excluir ocorrência?')) remove(ref(db, 'ocorrencias/'+id)); }
+        window.renderizarApenasOcorrencias = function() {
+            const mes = document.getElementById('filtro-mes-oco').value; const termo = document.getElementById('filtro-busca-oco').value.toLowerCase(); const stat = document.getElementById('filtro-status-oco').value;
+            const lista = ocorrencias.filter(o => { const bMes = !mes || o.data.startsWith(mes); const bStat = !stat || o.status === stat; const bTxt = !termo || (o.unidade+o.local+o.categoria+o.descricao+o.responsavel).toLowerCase().includes(termo); return bMes && bStat && bTxt; });
+            document.getElementById('dash-oco-total').innerText = lista.length; document.getElementById('dash-oco-abertas').innerText = lista.filter(o => o.status === 'Aberta').length; document.getElementById('dash-oco-tratativa').innerText = lista.filter(o => o.status === 'Em Tratativa').length; document.getElementById('dash-oco-encerradas').innerText = lista.filter(o => o.status === 'Encerrada').length;
+            const tbody = document.querySelector('#tabela-ocorrencias tbody'); tbody.innerHTML = '';
+            lista.forEach(o => {
+                const tr = document.createElement('tr');
+                const gravMap = {'Baixa':'bg-baixa','Média':'bg-media','Alta':'bg-alta','Crítica':'bg-critica'}; const badgeGrav = `<span class="badge ${gravMap[o.gravidade]||'bg-pendente'}">${o.gravidade}</span>`;
+                const statMap = {'Aberta':'bg-estacionado','Em Tratativa':'bg-andamento','Encerrada':'bg-concluido'}; const badgeStat = `<span class="badge ${statMap[o.status]}">${o.status}</span>`;
+                const tempo = o.status === 'Encerrada' && o.dataEncerramento ? `<span class="time-badge"><i class="fas fa-check"></i> ${calcularTempoDecorrido(o.data, o.dataEncerramento)}</span>` : `<span class="time-badge"><i class="fas fa-clock"></i> ${calcularTempoDecorrido(o.data)}</span>`;
+                let btnExcluir = currentUserRole === 'admin' ? `<button onclick="deletarOcorrencia('${o.id}')" class="action-btn btn-delete"><i class="fas fa-trash"></i></button>` : '';
+                tr.innerHTML = `<td>${formatarDataHora(o.data)}</td><td>${badgeGrav}</td><td><strong>${o.categoria}</strong><br><small>${o.unidade} - ${o.local}</small></td><td>${o.descricao.substring(0,50)}...<br><small style="color:var(--text-secondary)">Resp: ${o.responsavel}</small></td><td>${badgeStat}</td><td>${tempo}</td><td style="min-width:100px"><button onclick="editarOcorrencia('${o.id}')" class="action-btn btn-edit"><i class="fas fa-pen"></i></button>${btnExcluir}</td>`;
                 tbody.appendChild(tr);
             });
         }
@@ -1347,6 +1473,7 @@
             else if (tipo === 'visitantes') { dadosRaw = visitantes; nomeArquivo = "Relatorio_Visitantes.xlsx"; dadosFormatados = dadosRaw.map(v => ({ "Status": v.status, "Nome": v.nome, "Documento": v.doc, "Empresa": v.empresa, "Contato": v.contato, "Responsável": v.responsavel, "Finalidade": v.finalidade, "Entrada": formatarDataHora(v.entrada), "Saída": v.saida ? formatarDataHora(v.saida) : "-" })); }
             else if (tipo === 'veiculos') { dadosRaw = frota; nomeArquivo = "Relatorio_Garagem.xlsx"; dadosFormatados = dadosRaw.map(f => ({ "Status": f.status, "Tipo": f.tipo, "Condutor": f.motorista, "Veículo": f.carro, "Setor/Destino": f.setor, "Entrada": formatarDataHora(f.horaInicial), "KM Entrada": f.kmInicial, "Saída": f.horaFinal ? formatarDataHora(f.horaFinal) : "-", "KM Saída": f.kmFinal || "-" })); }
             else if (tipo === 'eventos') { dadosRaw = eventos; nomeArquivo = "Relatorio_Eventos.xlsx"; dadosFormatados = dadosRaw.map(e => ({ "Data": formatarData(e.data), "Evento": e.nome, "Tipo": e.tipo, "Organizador": e.organizador, "Local": e.local, "Público Est.": e.publico, "Coffee Break": e.coffee ? "Sim" : "Não", "Observações": e.obs })); }
+            else if (tipo === 'ocorrencias') { dadosRaw = ocorrencias; nomeArquivo = "Relatorio_Ocorrencias.xlsx"; dadosFormatados = dadosRaw.map(o => ({ "Data": formatarDataHora(o.data), "Unidade": o.unidade, "Local": o.local, "Categoria": o.categoria, "Gravidade": o.gravidade, "Descrição": o.descricao, "Responsável": o.responsavel, "Status": o.status, "Encerramento": o.dataEncerramento ? formatarDataHora(o.dataEncerramento) : "-" })); }
             
             if (dadosFormatados.length === 0) { alert("Não há dados para exportar nesta tabela."); return; }
             const ws = XLSX.utils.json_to_sheet(dadosFormatados); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Dados"); XLSX.writeFile(wb, nomeArquivo);
