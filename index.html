@@ -37,7 +37,7 @@
             --evento: #ec4899;        /* Rosa */
             --excel: #16a34a;         /* Verde Excel */
             --coffee: #854d0e;        /* Marrom café */
-            --ocorrencia: #dc2626;    /* Vermelho Alerta (NOVO) */
+            --ocorrencia: #dc2626;    /* Vermelho Alerta */
 
             /* Dimensões e Efeitos */
             --sidebar-width: 260px;
@@ -63,7 +63,7 @@
 
         /* Utilitários Visuais */
         .uppercase-input { text-transform: uppercase; }
-        /* Aplica maiúsculas em tudo, MENOS nos inputs de login (tratado abaixo) */
+        /* Aplica maiúsculas em tudo, MENOS nos inputs de login */
         input:not(.login-input)[type="text"], 
         textarea:not(.login-input), 
         input:not(.login-input)[type="text"]::placeholder, 
@@ -477,11 +477,6 @@
         }
         .btn-excel:hover { background-color: #15803d; }
 
-        /* Outros Componentes */
-        .foto-container { text-align: center; padding: 20px; border: 2px dashed #e5e7eb; border-radius: var(--radius-lg); background: #f9fafb; margin-bottom: 16px; }
-        .foto-preview { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin-bottom: 16px; border: 4px solid white; box-shadow: var(--shadow-md); }
-        .avatar-table { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; vertical-align: middle; margin-right: 12px; border: 2px solid white; box-shadow: var(--shadow-sm); }
-
         .hidden-tab { display: none !important; }
         .section { display: none; animation: fadeIn 0.3s ease-in-out; }
         .section.active { display: block; }
@@ -512,16 +507,6 @@
         
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Estilos Webcam (Mantidos) */
-        #webcam-container { display: none; flex-direction: column; align-items: center; gap: 10px; margin-top: 10px; width: 100%; }
-        #webcam-video { width: 100%; border-radius: 8px; background: #000; border: 2px solid #333; transform: scaleX(-1); }
-        .webcam-controls { display: flex; gap: 10px; width: 100%; }
-        .btn-snap { background: var(--success); color: white; flex: 1; border: none; padding: 8px; border-radius: var(--radius-md); font-weight: bold; }
-        .btn-close-cam { background: var(--danger); color: white; border: none; padding: 8px 15px; border-radius: var(--radius-md); }
-        .botoes-foto-wrapper { display: flex; gap: 10px; justify-content: center; width: 100%; margin-top: 10px; }
-        .btn-foto { background: var(--secondary); color: white; padding: 8px 16px; border-radius: var(--radius-md); cursor: pointer; font-size: 0.85rem; border: none; display: inline-flex; align-items: center; gap: 6px; }
-        .btn-webcam { background: #ea580c; }
     </style>
 </head>
 <body>
@@ -718,30 +703,11 @@
                             <form id="form-visitante">
                                 <input type="hidden" id="visitante-id-edit" value="">
                                 
-                                <div class="foto-container">
-                                    <img id="vis-preview" class="foto-preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Cpath fill='%23d1d5db' d='M50 50c-13.8 0-25-11.2-25-25s11.2-25 25-25 25 11.2 25 25-11.2 25-25 25zm0 10c16.7 0 50 8.3 50 25v15H0v-15c0-16.7 33.3-25 50-25z'/%3E%3C/svg%3E">
-                                    <div id="webcam-container">
-                                        <video id="webcam-video" autoplay playsinline></video>
-                                        <div class="webcam-controls">
-                                            <button type="button" id="btn-snap" class="btn-snap"><i class="fas fa-camera"></i> Capturar</button>
-                                            <button type="button" id="btn-close-cam" class="btn-close-cam"><i class="fas fa-times"></i></button>
-                                        </div>
-                                    </div>
-                                    <div class="botoes-foto-wrapper" id="btns-foto-originais">
-                                        <label for="vis-foto-input" class="btn-foto"><i class="fas fa-upload"></i> Upload</label>
-                                        <button type="button" id="btn-open-webcam" class="btn-foto btn-webcam"><i class="fas fa-video"></i> Webcam</button>
-                                    </div>
-                                    <input type="file" id="vis-foto-input" accept="image/*" capture="environment" style="display:none">
-                                    <input type="hidden" id="vis-foto-base64">
-                                </div>
-
                                 <div class="form-grid">
-                                    <div><label>Nome Completo</label><input type="text" id="vis-nome" required></div>
-                                    <div><label>Documento (RG/CPF)</label><input type="text" id="vis-doc" required></div>
-                                    <div><label>Empresa</label><input type="text" id="vis-empresa"></div>
-                                    <div><label>Contato</label><input type="text" id="vis-contato"></div>
-                                    <div><label>Responsável (Anfitrião)</label><input type="text" id="vis-responsavel" required></div>
-                                    <div><label>Finalidade</label><input type="text" id="vis-finalidade" required></div>
+                                    <div><label>Nome Completo</label><input type="text" id="vis-nome" required placeholder="NOME DO VISITANTE"></div>
+                                    <div><label>Empresa</label><input type="text" id="vis-empresa" placeholder="EMPRESA / ÓRGÃO"></div>
+                                    <div><label>Responsável (Quem visita?)</label><input type="text" id="vis-responsavel" required placeholder="SETOR / NOME"></div>
+                                    <div><label>Motivo da Visita</label><input type="text" id="vis-finalidade" required placeholder="REUNIÃO, ENTREGA, ETC."></div>
                                     <div><label>Entrada</label><input type="datetime-local" id="vis-entrada" required></div>
                                     <div style="display:none" id="div-status-vis"><label>Status</label><select id="vis-status-edit"><option value="Ativo">Na Empresa</option><option value="Saiu">Saiu</option></select></div>
                                 </div>
@@ -755,12 +721,12 @@
                         <div class="card">
                             <div class="filter-container">
                                 <div class="filter-group"><label>Mês:</label><input type="month" id="filtro-mes-vis" onchange="window.renderizarApenasVisitantes()"></div>
-                                <div class="filter-group"><label>Buscar:</label><input type="text" id="filtro-busca-vis" onkeyup="window.renderizarApenasVisitantes()" placeholder="Nome, Doc..."></div>
+                                <div class="filter-group"><label>Buscar:</label><input type="text" id="filtro-busca-vis" onkeyup="window.renderizarApenasVisitantes()" placeholder="Nome, Empresa..."></div>
                                 <button onclick="window.exportarParaExcel('visitantes')" class="btn-excel"><i class="fas fa-file-excel"></i> Exportar</button>
                             </div>
                             <div class="table-container">
                                 <table id="tabela-visitantes">
-                                    <thead><tr><th>Status</th><th>Visitante</th><th>Empresa/Doc</th><th>Responsável/Finalidade</th><th>Entrada/Saída</th><th>Ação</th></tr></thead>
+                                    <thead><tr><th>Status</th><th>Nome</th><th>Empresa</th><th>Visitando / Motivo</th><th>Entrada/Saída</th><th>Ação</th></tr></thead>
                                     <tbody><tr><td colspan="6" class="loading">Carregando dados...</td></tr></tbody>
                                 </table>
                             </div>
@@ -1222,35 +1188,18 @@
         }
 
         /* --- 2. VISITANTES --- */
-        const videoElement = document.getElementById('webcam-video');
-        const webcamContainer = document.getElementById('webcam-container');
-        const btnsFotoWrapper = document.getElementById('btns-foto-originais');
-        const imgPreview = document.getElementById('vis-preview');
-        let stream = null;
-
-        document.getElementById('btn-open-webcam').addEventListener('click', async () => {
-            try { stream = await navigator.mediaDevices.getUserMedia({ video: true }); videoElement.srcObject = stream; webcamContainer.style.display = 'flex'; btnsFotoWrapper.style.display = 'none'; imgPreview.style.display = 'none'; } catch (err) { alert("Webcam error"); }
-        });
-        function fecharWebcam() { if (stream) { stream.getTracks().forEach(track => track.stop()); stream = null; } webcamContainer.style.display = 'none'; btnsFotoWrapper.style.display = 'flex'; imgPreview.style.display = 'block'; }
-        document.getElementById('btn-close-cam').addEventListener('click', fecharWebcam);
-        document.getElementById('btn-snap').addEventListener('click', () => { if (!stream) return; const canvas = document.createElement('canvas'); const maxWidth = 500; const scale = maxWidth / videoElement.videoWidth; const newWidth = (videoElement.videoWidth > maxWidth) ? maxWidth : videoElement.videoWidth; const newHeight = (videoElement.videoWidth > maxWidth) ? videoElement.videoHeight * scale : videoElement.videoHeight; canvas.width = newWidth; canvas.height = newHeight; const ctx = canvas.getContext('2d'); ctx.translate(newWidth, 0); ctx.scale(-1, 1); ctx.drawImage(videoElement, 0, 0, newWidth, newHeight); const base64String = canvas.toDataURL('image/jpeg', 0.7); document.getElementById('vis-foto-base64').value = base64String; document.getElementById('vis-preview').src = base64String; fecharWebcam(); });
-        const fileInput = document.getElementById('vis-foto-input');
-        fileInput.addEventListener('change', function(event) { const file = event.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = function(e) { const img = new Image(); img.onload = function() { const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d'); const maxWidth = 500; const scale = maxWidth / img.width; const newWidth = (img.width > maxWidth) ? maxWidth : img.width; const newHeight = (img.width > maxWidth) ? img.height * scale : img.height; canvas.width = newWidth; canvas.height = newHeight; ctx.drawImage(img, 0, 0, newWidth, newHeight); const base64String = canvas.toDataURL('image/jpeg', 0.7); document.getElementById('vis-foto-base64').value = base64String; document.getElementById('vis-preview').src = base64String; }; img.src = e.target.result; }; reader.readAsDataURL(file); } });
-
+        
         const formVis = document.getElementById('form-visitante');
+        
         formVis.addEventListener('submit', (e) => {
             e.preventDefault();
             const idEdicao = document.getElementById('visitante-id-edit').value;
             const id = idEdicao || Date.now();
-            const fotoBase64 = document.getElementById('vis-foto-base64').value;
             
             const novoVisitante = {
                 id: id,
-                foto: fotoBase64 || null, 
                 nome: document.getElementById('vis-nome').value.toUpperCase(),
-                doc: document.getElementById('vis-doc').value.toUpperCase(),
                 empresa: document.getElementById('vis-empresa').value.toUpperCase(),
-                contato: document.getElementById('vis-contato').value.toUpperCase(),
                 responsavel: document.getElementById('vis-responsavel').value.toUpperCase(),
                 finalidade: document.getElementById('vis-finalidade').value.toUpperCase(),
                 entrada: document.getElementById('vis-entrada').value,
@@ -1260,9 +1209,6 @@
 
             if(idEdicao) {
                 const ant = visitantes.find(v => String(v.id) === String(id));
-                if (!novoVisitante.foto && ant && ant.foto) {
-                    novoVisitante.foto = ant.foto;
-                }
                 
                 // LÓGICA DE PRESERVAÇÃO
                 if (novoVisitante.status === 'Ativo') {
@@ -1288,23 +1234,49 @@
         window.editarVisitante = function(id) {
             const v = visitantes.find(i => String(i.id) === String(id)); if(!v) return;
             document.getElementById('visitante-id-edit').value = v.id;
-            document.getElementById('vis-nome').value = v.nome; document.getElementById('vis-doc').value = v.doc; document.getElementById('vis-empresa').value = v.empresa; document.getElementById('vis-contato').value = v.contato; document.getElementById('vis-responsavel').value = v.responsavel; document.getElementById('vis-finalidade').value = v.finalidade; document.getElementById('vis-entrada').value = v.entrada;
-            const preview = document.getElementById('vis-preview'); const defaultIcon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Cpath fill='%23d1d5db' d='M50 50c-13.8 0-25-11.2-25-25s11.2-25 25-25 25 11.2 25 25-11.2 25-25 25zm0 10c16.7 0 50 8.3 50 25v15H0v-15c0-16.7 33.3-25 50-25z'/%3E%3C/svg%3E";
-            if (v.foto) { preview.src = v.foto; document.getElementById('vis-foto-base64').value = v.foto; } else { preview.src = defaultIcon; document.getElementById('vis-foto-base64').value = ""; }
-            document.getElementById('titulo-form-visitante').innerHTML = '<i class="fas fa-edit"></i> Editando Visitante'; document.getElementById('btn-submit-vis').innerText = "Salvar Alterações"; document.getElementById('btn-cancel-vis').style.display = "block";
+            document.getElementById('vis-nome').value = v.nome; 
+            document.getElementById('vis-empresa').value = v.empresa; 
+            document.getElementById('vis-responsavel').value = v.responsavel; 
+            document.getElementById('vis-finalidade').value = v.finalidade; 
+            document.getElementById('vis-entrada').value = v.entrada;
+            
+            document.getElementById('titulo-form-visitante').innerHTML = '<i class="fas fa-edit"></i> Editando Visitante'; 
+            document.getElementById('btn-submit-vis').innerText = "Salvar Alterações"; 
+            document.getElementById('btn-cancel-vis').style.display = "block";
+            
             const divStatus = document.getElementById('div-status-vis'); if(divStatus) divStatus.style.display="block";
             const selStat = document.getElementById('vis-status-edit'); if(selStat) selStat.value = v.status;
-            document.getElementById('visitantes').scrollIntoView({behavior:'smooth'}); fecharWebcam();
+            
+            document.getElementById('visitantes').scrollIntoView({behavior:'smooth'});
         }
+        
         window.deletarVisitante = function(id) { if(confirm('Excluir?')) { remove(ref(db, 'visitantes/' + id)); if(document.getElementById('visitante-id-edit').value == id) cancelarEdicaoVisitante(); } }
-        window.cancelarEdicaoVisitante = function() { document.getElementById('visitante-id-edit').value = ""; formVis.reset(); document.getElementById('vis-entrada').value = getLocalISO(); document.getElementById('titulo-form-visitante').innerHTML = '<i class="fas fa-user-plus"></i> Cadastrar Visitante'; document.getElementById('btn-submit-vis').innerText = "Registrar Entrada"; document.getElementById('btn-cancel-vis').style.display = "none"; document.getElementById('div-status-vis').style.display="none"; document.getElementById('vis-preview').src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Cpath fill='%23d1d5db' d='M50 50c-13.8 0-25-11.2-25-25s11.2-25 25-25 25 11.2 25 25-11.2 25-25 25zm0 10c16.7 0 50 8.3 50 25v15H0v-15c0-16.7 33.3-25 50-25z'/%3E%3C/svg%3E"; document.getElementById('vis-foto-base64').value = ""; fecharWebcam(); }
+        
+        window.cancelarEdicaoVisitante = function() { 
+            document.getElementById('visitante-id-edit').value = ""; 
+            formVis.reset(); 
+            document.getElementById('vis-entrada').value = getLocalISO(); 
+            document.getElementById('titulo-form-visitante').innerHTML = '<i class="fas fa-user-plus"></i> Cadastrar Visitante'; 
+            document.getElementById('btn-submit-vis').innerText = "Registrar Entrada"; 
+            document.getElementById('btn-cancel-vis').style.display = "none"; 
+            document.getElementById('div-status-vis').style.display="none"; 
+        }
 
         window.renderizarApenasVisitantes = function() {
-            const mes = document.getElementById('filtro-mes-vis').value; const termo = document.getElementById('filtro-busca-vis').value.toLowerCase();
-            const lista = visitantes.filter(v => { const bateMes = !mes || v.entrada.startsWith(mes); const bateTermo = !termo || v.nome.toLowerCase().includes(termo) || v.doc.includes(termo) || v.empresa.toLowerCase().includes(termo); return bateMes && bateTermo; });
-            document.getElementById('dash-visitantes-ativos').innerText = lista.filter(v => v.status === 'Ativo').length; document.getElementById('dash-visitantes-total').innerText = lista.length;
+            const mes = document.getElementById('filtro-mes-vis').value; 
+            const termo = document.getElementById('filtro-busca-vis').value.toLowerCase();
+            
+            const lista = visitantes.filter(v => { 
+                const bateMes = !mes || v.entrada.startsWith(mes); 
+                const bateTermo = !termo || v.nome.toLowerCase().includes(termo) || (v.empresa && v.empresa.toLowerCase().includes(termo)); 
+                return bateMes && bateTermo; 
+            });
+            
+            document.getElementById('dash-visitantes-ativos').innerText = lista.filter(v => v.status === 'Ativo').length; 
+            document.getElementById('dash-visitantes-total').innerText = lista.length;
+            
             const tbody = document.querySelector('#tabela-visitantes tbody'); tbody.innerHTML = '';
-            const defaultIcon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Cpath fill='%23d1d5db' d='M50 50c-13.8 0-25-11.2-25-25s11.2-25 25-25 25 11.2 25 25-11.2 25-25 25zm0 10c16.7 0 50 8.3 50 25v15H0v-15c0-16.7 33.3-25 50-25z'/%3E%3C/svg%3E";
+            
             lista.forEach(v => {
                 const tr = document.createElement('tr');
                 const badge = v.status === 'Ativo' ? '<span class="badge bg-visitante-ativo">NA EMPRESA</span>' : '<span class="badge bg-saiu">SAIU</span>';
@@ -1312,11 +1284,17 @@
                 const dataSai = v.saida ? new Date(v.saida).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '-';
                 const btnBaixa = v.status === 'Ativo' ? `<button onclick="baixaVisitante('${v.id}')" class="action-btn btn-baixa" title="Registrar Saída"><i class="fas fa-sign-out-alt"></i></button>` : '<i class="fas fa-check" style="color:var(--success); margin-right:5px"></i>';
                 let btnExcluir = ''; if (currentUserRole === 'admin') btnExcluir = `<button onclick="deletarVisitante('${v.id}')" class="action-btn btn-delete" title="Excluir"><i class="fas fa-trash"></i></button>`;
-                const imgTag = `<img src="${v.foto || defaultIcon}" class="avatar-table">`;
-                tr.innerHTML = `<td>${badge}</td><td>${imgTag}<strong>${v.nome}</strong><br><small style="color:var(--text-secondary)">${v.contato || ''}</small></td><td>${v.empresa || '-'}<br><small style="color:var(--text-secondary)">${v.doc}</small></td><td>${v.responsavel}<br><small style="color:var(--text-secondary)">${v.finalidade}</small></td><td>Ent: ${dataEnt}<br>Sai: ${dataSai}</td><td style="min-width:140px">${btnBaixa}<button onclick="editarVisitante('${v.id}')" class="action-btn btn-edit"><i class="fas fa-pen"></i></button>${btnExcluir}</td>`;
+                
+                tr.innerHTML = `<td>${badge}</td>
+                                <td><strong>${v.nome}</strong></td>
+                                <td>${v.empresa || '-'}</td>
+                                <td>${v.responsavel}<br><small style="color:var(--text-secondary)">${v.finalidade}</small></td>
+                                <td>Ent: ${dataEnt}<br>Sai: ${dataSai}</td>
+                                <td style="min-width:140px">${btnBaixa}<button onclick="editarVisitante('${v.id}')" class="action-btn btn-edit"><i class="fas fa-pen"></i></button>${btnExcluir}</td>`;
                 tbody.appendChild(tr);
             });
         }
+        
         window.baixaVisitante = function(id) { if(confirm('Confirmar saída do visitante?')) { update(ref(db, 'visitantes/' + id), { status: 'Saiu', saida: new Date().toISOString() }); } }
 
         /* --- 3. VEICULOS --- */
@@ -1470,7 +1448,22 @@
             let dadosRaw = []; let nomeArquivo = ""; let dadosFormatados = [];
             
             if (tipo === 'demandas') { dadosRaw = demandas; nomeArquivo = "Relatorio_Demandas.xlsx"; dadosFormatados = dadosRaw.map(d => ({ "Data": formatarData(d.data), "Prioridade": d.prioridade, "Título": d.titulo, "Setor": d.setor, "Solicitante": d.solicitante, "Status": d.status, "Conclusão": d.dataFim ? formatarDataHora(d.dataFim) : "-" })); } 
-            else if (tipo === 'visitantes') { dadosRaw = visitantes; nomeArquivo = "Relatorio_Visitantes.xlsx"; dadosFormatados = dadosRaw.map(v => ({ "Status": v.status, "Nome": v.nome, "Documento": v.doc, "Empresa": v.empresa, "Contato": v.contato, "Responsável": v.responsavel, "Finalidade": v.finalidade, "Entrada": formatarDataHora(v.entrada), "Saída": v.saida ? formatarDataHora(v.saida) : "-" })); }
+            
+            // : Exportação limpa
+            else if (tipo === 'visitantes') { 
+                dadosRaw = visitantes; 
+                nomeArquivo = "Relatorio_Visitantes.xlsx"; 
+                dadosFormatados = dadosRaw.map(v => ({ 
+                    "Status": v.status, 
+                    "Nome": v.nome, 
+                    "Empresa": v.empresa || '-', 
+                    "Responsável": v.responsavel, 
+                    "Finalidade": v.finalidade, 
+                    "Entrada": formatarDataHora(v.entrada), 
+                    "Saída": v.saida ? formatarDataHora(v.saida) : "-" 
+                })); 
+            }
+            
             else if (tipo === 'veiculos') { dadosRaw = frota; nomeArquivo = "Relatorio_Garagem.xlsx"; dadosFormatados = dadosRaw.map(f => ({ "Status": f.status, "Tipo": f.tipo, "Condutor": f.motorista, "Veículo": f.carro, "Setor/Destino": f.setor, "Entrada": formatarDataHora(f.horaInicial), "KM Entrada": f.kmInicial, "Saída": f.horaFinal ? formatarDataHora(f.horaFinal) : "-", "KM Saída": f.kmFinal || "-" })); }
             else if (tipo === 'eventos') { dadosRaw = eventos; nomeArquivo = "Relatorio_Eventos.xlsx"; dadosFormatados = dadosRaw.map(e => ({ "Data": formatarData(e.data), "Evento": e.nome, "Tipo": e.tipo, "Organizador": e.organizador, "Local": e.local, "Público Est.": e.publico, "Coffee Break": e.coffee ? "Sim" : "Não", "Observações": e.obs })); }
             else if (tipo === 'ocorrencias') { dadosRaw = ocorrencias; nomeArquivo = "Relatorio_Ocorrencias.xlsx"; dadosFormatados = dadosRaw.map(o => ({ "Data": formatarDataHora(o.data), "Unidade": o.unidade, "Local": o.local, "Categoria": o.categoria, "Gravidade": o.gravidade, "Descrição": o.descricao, "Responsável": o.responsavel, "Status": o.status, "Encerramento": o.dataEncerramento ? formatarDataHora(o.dataEncerramento) : "-" })); }
@@ -1481,9 +1474,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
