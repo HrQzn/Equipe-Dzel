@@ -291,6 +291,10 @@
                                     <div><label>Solicitante</label><input type="text" id="demanda-solicitante" required></div>
                                     <div><label>Prioridade</label><select id="demanda-prioridade"><option value="Baixa">Baixa</option><option value="Média">Média</option><option value="Alta">Alta</option></select></div>
                                     <div><label>Data/Hora Solicitação</label><input type="datetime-local" id="demanda-data" required></div>
+                                    
+                                    <div style="grid-column: 1 / -1;"><label>Descrição Detalhada da Execução (Opcional)</label><textarea id="demanda-execucao" rows="2" placeholder="Preencha pelo celular/PC após realizar o serviço..."></textarea></div>
+                                    <div style="grid-column: 1 / -1;"><label>Materiais / Peças Utilizadas (Opcional)</label><textarea id="demanda-materiais" rows="2" placeholder="Descreva os materiais utilizados..."></textarea></div>
+
                                     <div id="div-status-demanda" style="display:none"><label>Status</label><select id="demanda-status-edit"><option value="Pendente">Pendente</option><option value="Em Andamento">Em Andamento</option><option value="Concluído">Concluído</option></select></div>
                                 </div>
                                 <div class="btn-container">
@@ -532,7 +536,7 @@
         let eventos = [];
         let ocorrencias = [];
 
-        // --- FORÇAR MAIÚSCULAS NOS CAMPOS DE TEXTO (COM CURSOR SEGURO) ---
+        // --- FORÇAR MAIÚSCULAS NOS CAMPOS DE TEXTO ---
         document.addEventListener('input', function(e) {
             if (e.target.matches('input:not(.login-input)[type="text"], textarea:not(.login-input)')) {
                 const start = e.target.selectionStart;
@@ -578,13 +582,13 @@
             }
         }
 
-        // --- LÓGICA DE LOGIN (COM BASE64 E PROTEÇÃO CONTRA MAIÚSCULAS) ---
+        // --- LÓGICA DE LOGIN ---
         const CREDENCIAIS = {
-    'admin': { passMask: 'YWRtaW4yNDUx', role: 'admin', nome: 'Administrador' },
-    'zeladoria': { passMask: 'emVsYWRvcmlh', role: 'zeladoria', nome: 'Zeladoria' },
-    'portaria': { passMask: 'cG9ydGFyaWE=', role: 'portaria', nome: 'Portaria' },
-    'recepcao': { passMask: 'cmVjZXBjYW8=', role: 'recepcao', nome: 'Recepção' }
-       };
+            'admin': { passMask: 'YWRtaW4yNDUx', role: 'admin', nome: 'Administrador' },
+            'zeladoria': { passMask: 'emVsYWRvcmlh', role: 'zeladoria', nome: 'Zeladoria' },
+            'portaria': { passMask: 'cG9ydGFyaWE=', role: 'portaria', nome: 'Portaria' },
+            'recepcao': { passMask: 'cmVjZXBjYW8=', role: 'recepcao', nome: 'Recepção' }
+        };
         let currentUserRole = null;
 
         const usuarioSalvo = localStorage.getItem('zeladoria_user');
@@ -599,10 +603,7 @@
 
         window.fazerLogin = function() {
             const userKey = document.getElementById('login-user').value.trim().toLowerCase();
-            // Pega a senha e já força para minúscula, para evitar erros de teclado de celular
             const passOriginal = document.getElementById('login-pass').value.trim().toLowerCase(); 
-            
-            // Converte a senha digitada para o código mascarado
             const passDigitadaMask = btoa(passOriginal);
 
             if (CREDENCIAIS[userKey] && CREDENCIAIS[userKey].passMask === passDigitadaMask) {
@@ -721,6 +722,8 @@
                 solicitante: document.getElementById('demanda-solicitante').value.toUpperCase(),
                 prioridade: document.getElementById('demanda-prioridade').value,
                 data: document.getElementById('demanda-data').value,
+                execucao: document.getElementById('demanda-execucao').value.toUpperCase(), // NOVO CAMPO
+                materiais: document.getElementById('demanda-materiais').value.toUpperCase(), // NOVO CAMPO
                 status: idEdicao ? document.getElementById('demanda-status-edit').value : 'Pendente',
                 dataFim: null 
             };
@@ -754,6 +757,8 @@
             document.getElementById('demanda-solicitante').value = d.solicitante; 
             document.getElementById('demanda-prioridade').value = d.prioridade;
             document.getElementById('demanda-data').value = d.data;
+            document.getElementById('demanda-execucao').value = d.execucao || ''; // NOVO CAMPO
+            document.getElementById('demanda-materiais').value = d.materiais || ''; // NOVO CAMPO
             document.getElementById('titulo-form-demanda').innerHTML = '<i class="fas fa-edit"></i> Editando Demanda';
             document.getElementById('btn-submit-demanda').innerText = "Salvar Alterações"; 
             document.getElementById('btn-cancel-demanda').style.display = "block";
@@ -765,6 +770,8 @@
         window.cancelarEdicaoDemanda = function() {
             document.getElementById('demanda-id-edit').value = ""; formDemanda.reset(); 
             document.getElementById('demanda-data').value = getLocalISO();
+            document.getElementById('demanda-execucao').value = ""; 
+            document.getElementById('demanda-materiais').value = ""; 
             document.getElementById('titulo-form-demanda').innerHTML = '<i class="fas fa-plus-circle"></i> Nova Solicitação';
             document.getElementById('btn-submit-demanda').innerText = "Registrar Demanda"; 
             document.getElementById('btn-cancel-demanda').style.display = "none"; 
@@ -1156,13 +1163,17 @@
             });
         }
 
-        // --- FUNÇÃO DE IMPRESSÃO DA O.S. ---
+        // --- FUNÇÃO DE IMPRESSÃO ---
         window.imprimirOS = function(id) {
             const d = demandas.find(item => String(item.id) === String(id));
             if (!d) return;
 
             const dataAbertura = new Date(d.data).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
             const numeroOS = d.numeroOS || d.id.toString().slice(-4); 
+            
+            // Tratamento para exibir a descrição preenchida respeitando as quebras de linha
+            const textoExecucao = d.execucao ? d.execucao.replace(/\n/g, '<br>') : '';
+            const textoMateriais = d.materiais ? d.materiais.replace(/\n/g, '<br>') : '';
             
             let baseUrl = window.location.href;
             if (baseUrl.includes('index.html')) {
@@ -1287,8 +1298,8 @@
                                 <td width="50%" class="bg-gray">MATERIAIS E PEÇAS UTILIZADOS (REPOSIÇÃO)</td>
                             </tr>
                             <tr>
-                                <td style="height: 220px;"></td>
-                                <td style="height: 220px;"></td>
+                                <td style="height: 220px; font-weight: normal; font-size: 11px;">${textoExecucao}</td>
+                                <td style="height: 220px; font-weight: normal; font-size: 11px;">${textoMateriais}</td>
                             </tr>
                         </table>
 
@@ -1325,14 +1336,12 @@
                     </div>
 
                     <script>
-                        // A impressora agora vai esperar a tela aparecer primeiro (500ms)
                         window.onload = function() {
                             setTimeout(function() {
                                 window.print();
                             }, 500); 
                         };
                         
-                        // Assim que a janela da impressora for fechada pelo usuário, a aba da O.S. fecha sozinha
                         window.onafterprint = function() {
                             window.close();
                         };
@@ -1351,7 +1360,8 @@
             
             if (tipo === 'demandas') { 
                 dadosRaw = demandas; nomeArquivo = "Relatorio_Demandas.xlsx"; 
-                dadosFormatados = dadosRaw.map(d => ({ "Data": formatarData(d.data), "O.S.": d.numeroOS || "-", "Prioridade": d.prioridade, "Título": d.titulo, "Setor": d.setor, "Solicitante": d.solicitante, "Status": d.status, "Conclusão": d.dataFim ? formatarDataHora(d.dataFim) : "-" })); 
+                // As novas colunas de Execução e Materiais também foram adicionadas na planilha do Excel!
+                dadosFormatados = dadosRaw.map(d => ({ "Data": formatarData(d.data), "O.S.": d.numeroOS || "-", "Prioridade": d.prioridade, "Título": d.titulo, "Setor": d.setor, "Solicitante": d.solicitante, "Execução": d.execucao || "-", "Materiais Utilizados": d.materiais || "-", "Status": d.status, "Conclusão": d.dataFim ? formatarDataHora(d.dataFim) : "-" })); 
             } else if (tipo === 'visitantes') { 
                 dadosRaw = visitantes; nomeArquivo = "Relatorio_Visitantes.xlsx"; 
                 dadosFormatados = dadosRaw.map(v => ({ "Status": v.status, "Nome": v.nome, "Empresa": v.empresa || '-', "Responsável": v.responsavel, "Finalidade": v.finalidade, "Entrada": formatarDataHora(v.entrada), "Saída": v.saida ? formatarDataHora(v.saida) : "-" })); 
@@ -1375,5 +1385,3 @@
     </script>
 </body>
 </html>
-
-
