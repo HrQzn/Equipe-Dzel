@@ -578,13 +578,12 @@
             }
         }
 
-        // --- LÓGICA DE LOGIN OFUSCADA (MAIS SEGURA PARA GITHUB) ---
-        // As senhas agora estão mascaradas em Base64 para não ficarem expostas a olho nu no repositório.
+        // --- LOGICA ORIGINAL DE LOGIN ---
         const CREDENCIAIS = {
-            'admin': { passMask: 'YWRtaW4yNDUx', role: 'admin', nome: 'Administrador' }, // YWRtaW4yNDUx = admin2451
-            'zeladoria': { passMask: 'emVsYWRvcmlh', role: 'zeladoria', nome: 'Zeladoria' }, // emVsYWRvcmlh = zeladoria
-            'portaria': { passMask: 'cG9ydGFyaWE=', role: 'portaria', nome: 'Portaria' }, // cG9ydGFyaWE= = portaria
-            'recepcao': { passMask: 'cmVjZXBjYW8=', role: 'recepcao', nome: 'Recepção' } // cmVjZXBjYW8= = recepcao
+            'admin': { pass: 'admin2451', role: 'admin', nome: 'Administrador' },
+            'zeladoria': { pass: 'zeladoria', role: 'zeladoria', nome: 'Zeladoria' },
+            'portaria': { pass: 'portaria', role: 'portaria', nome: 'Portaria' },
+            'recepcao': { pass: 'recepcao', role: 'recepcao', nome: 'Recepção' }
         };
         let currentUserRole = null;
 
@@ -596,22 +595,6 @@
 
         window.checkEnter = function(e) { 
             if(e.key === 'Enter') window.fazerLogin(); 
-        }
-
-        window.fazerLogin = function() {
-            const userKey = document.getElementById('login-user').value.trim().toLowerCase();
-            const passOriginal = document.getElementById('login-pass').value.trim();
-            
-            // Converte a senha digitada para o código mascarado antes de comparar
-            const passDigitadaMask = btoa(passOriginal);
-
-            if (CREDENCIAIS[userKey] && CREDENCIAIS[userKey].passMask === passDigitadaMask) {
-                currentUserRole = CREDENCIAIS[userKey].role;
-                localStorage.setItem('zeladoria_user', JSON.stringify(CREDENCIAIS[userKey]));
-                iniciarSistema(CREDENCIAIS[userKey]);
-            } else {
-                document.getElementById('login-error').style.display = 'flex';
-            }
         }
 
         window.fazerLogin = function() {
@@ -1336,7 +1319,7 @@
                     </div>
                     
                     <div class="footer-note">
-                        Documento impresso em ${new Date().toLocaleString('pt-BR')}
+                        Documento impresso através do Sistema de Gestão Predial (DZEL/SEDUC) em ${new Date().toLocaleString('pt-BR')}
                     </div>
 
                     <script>
@@ -1391,5 +1374,3 @@
     </script>
 </body>
 </html>
-
-
