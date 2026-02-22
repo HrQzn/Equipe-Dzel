@@ -52,7 +52,14 @@
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-primary); height: 100vh; overflow: hidden; display: flex; }
         
         .uppercase-input { text-transform: uppercase; }
-        input:not(.login-input)[type="text"], textarea:not(.login-input), input:not(.login-input)[type="text"]::placeholder, textarea:not(.login-input):::placeholder { text-transform: uppercase; }
+        
+        /* CORREÇÃO APLICADA AQUI: Ajuste dos dois pontos do ::placeholder para aplicar as maiúsculas visualmente */
+        input:not(.login-input)[type="text"], 
+        textarea:not(.login-input), 
+        input:not(.login-input)[type="text"]::placeholder, 
+        textarea:not(.login-input)::placeholder { 
+            text-transform: uppercase; 
+        }
 
         /* --- TELA DE LOGIN --- */
         .login-wrapper { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); z-index: 9999; display: flex; justify-content: center; align-items: center; padding: 20px; }
@@ -532,6 +539,16 @@
         let eventos = [];
         let ocorrencias = [];
 
+        // --- FORÇAR MAIÚSCULAS NOS CAMPOS DE TEXTO ENQUANTO DIGITA ---
+        document.addEventListener('input', function(e) {
+            if (e.target.matches('input:not(.login-input)[type="text"], textarea:not(.login-input)')) {
+                const start = e.target.selectionStart;
+                const end = e.target.selectionEnd;
+                e.target.value = e.target.value.toUpperCase();
+                e.target.setSelectionRange(start, end);
+            }
+        });
+
         // --- UI CONTROL ---
         window.toggleSidebar = function() {
             if (window.innerWidth <= 768) { 
@@ -700,7 +717,7 @@
             
             const novaDemanda = {
                 id: id,
-                numeroOS: document.getElementById('demanda-numero-os').value.trim(), // Captura o valor inserido na hora do registro
+                numeroOS: document.getElementById('demanda-numero-os').value.trim(),
                 titulo: document.getElementById('demanda-titulo').value.toUpperCase(),
                 setor: document.getElementById('demanda-setor').value.toUpperCase(),
                 solicitante: document.getElementById('demanda-solicitante').value.toUpperCase(),
@@ -780,7 +797,7 @@
                 const btnAvancar = d.status !== 'Concluído' ? `<button onclick="avancarStatus('${d.id}')" class="action-btn btn-check" title="Avançar"><i class="fas fa-arrow-right"></i></button>` : '';
                 const dataFormatada = new Date(d.data).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
                 
-                // TABELA LIMPA: Mostra apenas d.titulo sem o número de O.S. (conforme imagem de referência do usuário)
+                // MANTEM A TABELA LIMPA: Mostra apenas o d.titulo na coluna de Serviços
                 tr.innerHTML = `<td>${dataFormatada}</td><td><span class="badge" style="background:#94a3b8">${d.prioridade}</span></td><td><strong>${d.titulo}</strong><br><small style="color:var(--text-secondary)">${d.solicitante} - ${d.setor}</small></td><td><span class="badge ${badgeClass}">${d.status}</span></td><td>${tempoDisplay}</td><td style="min-width:160px">${btnAvancar}<button onclick="imprimirOS('${d.id}')" class="action-btn btn-print" title="Imprimir O.S."><i class="fas fa-print"></i></button><button onclick="editarDemanda('${d.id}')" class="action-btn btn-edit"><i class="fas fa-pen"></i></button><button onclick="deletarDemanda('${d.id}')" class="action-btn btn-delete"><i class="fas fa-trash"></i></button></td>`;
                 tbody.appendChild(tr);
             });
@@ -1152,7 +1169,7 @@
             // Pega o número da O.S. que foi digitado (ou usa ID como segurança)
             const numeroOS = d.numeroOS || d.id.toString().slice(-4); 
             
-            // Cria o link absoluto baseando-se no endereço oficial da sua página (perfeito para o GitHub Pages)
+            // Busca o seu arquivo exato brasaosp.jpg direto da raiz do seu site no GitHub
             const logoSrc = new URL('brasaosp.jpg', document.baseURI).href;
             
             const janelaImpressao = window.open('', '_blank', 'width=900,height=700');
@@ -1190,7 +1207,7 @@
                         <table>
                             <tr>
                                 <td width="15%" class="text-center" style="vertical-align: middle;">
-                                    <img src="${logoSrc}" style="width: 65px; height: auto;" alt="Governo SP" onload="setTimeout(function(){ window.print(); window.close(); }, 300);" onerror="setTimeout(function(){ window.print(); window.close(); }, 300);">
+                                    <img src="${logoSrc}" style="width: 65px; height: auto;" alt="Governo SP" onload="window.print(); window.close();" onerror="window.print(); window.close();">
                                 </td>
                                 <td width="70%" class="text-center" style="vertical-align: middle;">
                                     <div class="header-title">GOVERNO DO ESTADO DE SÃO PAULO</div>
