@@ -107,15 +107,24 @@
         .metric-info p { font-size: 1.75rem; font-weight: 700; color: var(--text-primary); margin: 0; }
         .metric-icon { font-size: 2rem; opacity: 0.15; }
         
-        /* Cores Cards */
+        /* Cores Cards Gerais */
         .card-total { border-left-color: var(--primary); } .card-total .metric-icon { color: var(--primary); }
         .card-pendente { border-left-color: var(--warning); } .card-pendente .metric-icon { color: var(--warning); }
         .card-andamento { border-left-color: var(--accent); } .card-andamento .metric-icon { color: var(--accent); }
         .card-concluido { border-left-color: var(--success); } .card-concluido .metric-icon { color: var(--success); }
         .card-recepcao { border-left-color: var(--recepcao); } .card-recepcao .metric-icon { color: var(--recepcao); }
         .card-estacionado { border-left-color: var(--estacionado); } .card-estacionado .metric-icon { color: var(--estacionado); }
-        .card-evt-externo { border-left-color: var(--evento); } .card-evt-externo .metric-icon { color: var(--evento); }
         .card-ocorrencia { border-left-color: var(--ocorrencia); } .card-ocorrencia .metric-icon { color: var(--ocorrencia); }
+
+        /* Eventos Cards (Cores Específicas) */
+        .card-evt-total { border-left-color: #cbd5e1; } .card-evt-total .metric-icon { color: #cbd5e1; }
+        .card-evt-interno { border-left-color: var(--primary); } .card-evt-interno .metric-icon { color: var(--primary); }
+        .card-evt-externo { border-left-color: var(--evento); } .card-evt-externo .metric-icon { color: var(--evento); }
+        .card-evt-publico { border-left-color: var(--success); } .card-evt-publico .metric-icon { color: var(--success); }
+
+        /* Garagem Cards (Cores Específicas) */
+        .card-servidor { border-left-color: #cbd5e1; } .card-servidor .metric-icon { color: #cbd5e1; }
+        .card-visitante { border-left-color: #64748b; } .card-visitante .metric-icon { color: #64748b; }
 
         /* Forms e Tabelas */
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 20px; }
@@ -406,9 +415,9 @@
                     <section id="eventos" class="section">
                         <div class="dashboard-panel">
                             <div class="metric-card card-evt-total"><div class="metric-info"><h3>Total</h3><p id="dash-eventos-qtd">...</p></div><i class="fas fa-calendar metric-icon"></i></div>
-                            <div class="metric-card card-evt-interno"><div class="metric-info"><h3>Internos</h3><p id="dash-eventos-interno">...</p></div><i class="fas fa-building metric-icon" style="color:var(--primary)"></i></div>
-                            <div class="metric-card card-evt-externo"><div class="metric-info"><h3>Externos</h3><p id="dash-eventos-externo">...</p></div><i class="fas fa-globe metric-icon" style="color:var(--evento)"></i></div>
-                            <div class="metric-card card-evt-publico"><div class="metric-info"><h3>Público</h3><p id="dash-eventos-publico">...</p></div><i class="fas fa-users metric-icon" style="color:var(--success)"></i></div>
+                            <div class="metric-card card-evt-interno"><div class="metric-info"><h3>Internos</h3><p id="dash-eventos-interno">...</p></div><i class="fas fa-building metric-icon"></i></div>
+                            <div class="metric-card card-evt-externo"><div class="metric-info"><h3>Externos</h3><p id="dash-eventos-externo">...</p></div><i class="fas fa-globe metric-icon"></i></div>
+                            <div class="metric-card card-evt-publico"><div class="metric-info"><h3>Público</h3><p id="dash-eventos-publico">...</p></div><i class="fas fa-users metric-icon"></i></div>
                         </div>
                         <div class="card">
                             <h2 id="titulo-form-evento"><i class="fas fa-calendar-plus" style="color:var(--evento)"></i> Registrar Evento</h2>
@@ -722,8 +731,8 @@
                 solicitante: document.getElementById('demanda-solicitante').value.toUpperCase(),
                 prioridade: document.getElementById('demanda-prioridade').value,
                 data: document.getElementById('demanda-data').value,
-                execucao: document.getElementById('demanda-execucao').value.toUpperCase(), // NOVO CAMPO
-                materiais: document.getElementById('demanda-materiais').value.toUpperCase(), // NOVO CAMPO
+                execucao: document.getElementById('demanda-execucao').value.toUpperCase(),
+                materiais: document.getElementById('demanda-materiais').value.toUpperCase(),
                 status: idEdicao ? document.getElementById('demanda-status-edit').value : 'Pendente',
                 dataFim: null 
             };
@@ -757,8 +766,8 @@
             document.getElementById('demanda-solicitante').value = d.solicitante; 
             document.getElementById('demanda-prioridade').value = d.prioridade;
             document.getElementById('demanda-data').value = d.data;
-            document.getElementById('demanda-execucao').value = d.execucao || ''; // NOVO CAMPO
-            document.getElementById('demanda-materiais').value = d.materiais || ''; // NOVO CAMPO
+            document.getElementById('demanda-execucao').value = d.execucao || ''; 
+            document.getElementById('demanda-materiais').value = d.materiais || ''; 
             document.getElementById('titulo-form-demanda').innerHTML = '<i class="fas fa-edit"></i> Editando Demanda';
             document.getElementById('btn-submit-demanda').innerText = "Salvar Alterações"; 
             document.getElementById('btn-cancel-demanda').style.display = "block";
@@ -1171,7 +1180,6 @@
             const dataAbertura = new Date(d.data).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
             const numeroOS = d.numeroOS || d.id.toString().slice(-4); 
             
-            // Tratamento para exibir a descrição preenchida respeitando as quebras de linha
             const textoExecucao = d.execucao ? d.execucao.replace(/\n/g, '<br>') : '';
             const textoMateriais = d.materiais ? d.materiais.replace(/\n/g, '<br>') : '';
             
@@ -1339,7 +1347,7 @@
                         window.onload = function() {
                             setTimeout(function() {
                                 window.print();
-                            }, 500); 
+                            }, 800); 
                         };
                         
                         window.onafterprint = function() {
@@ -1360,7 +1368,6 @@
             
             if (tipo === 'demandas') { 
                 dadosRaw = demandas; nomeArquivo = "Relatorio_Demandas.xlsx"; 
-                // As novas colunas de Execução e Materiais também foram adicionadas na planilha do Excel!
                 dadosFormatados = dadosRaw.map(d => ({ "Data": formatarData(d.data), "O.S.": d.numeroOS || "-", "Prioridade": d.prioridade, "Título": d.titulo, "Setor": d.setor, "Solicitante": d.solicitante, "Execução": d.execucao || "-", "Materiais Utilizados": d.materiais || "-", "Status": d.status, "Conclusão": d.dataFim ? formatarDataHora(d.dataFim) : "-" })); 
             } else if (tipo === 'visitantes') { 
                 dadosRaw = visitantes; nomeArquivo = "Relatorio_Visitantes.xlsx"; 
