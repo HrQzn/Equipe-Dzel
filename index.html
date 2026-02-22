@@ -700,7 +700,7 @@
             
             const novaDemanda = {
                 id: id,
-                numeroOS: document.getElementById('demanda-numero-os').value.trim(), // Captura o Nº da O.S.
+                numeroOS: document.getElementById('demanda-numero-os').value.trim(), // Captura o valor inserido na hora do registro
                 titulo: document.getElementById('demanda-titulo').value.toUpperCase(),
                 setor: document.getElementById('demanda-setor').value.toUpperCase(),
                 solicitante: document.getElementById('demanda-solicitante').value.toUpperCase(),
@@ -733,7 +733,7 @@
         window.editarDemanda = function(id) {
             const d = demandas.find(item => String(item.id) === String(id)); if (!d) return;
             document.getElementById('demanda-id-edit').value = d.id;
-            document.getElementById('demanda-numero-os').value = d.numeroOS || ''; // Carrega o Nº da O.S.
+            document.getElementById('demanda-numero-os').value = d.numeroOS || ''; 
             document.getElementById('demanda-titulo').value = d.titulo; 
             document.getElementById('demanda-setor').value = d.setor;
             document.getElementById('demanda-solicitante').value = d.solicitante; 
@@ -763,7 +763,6 @@
             const lista = demandas.filter(d => {
                 const bateData = !filtroMes || d.data.startsWith(filtroMes);
                 const bateStatus = !filtroStatus || d.status === filtroStatus;
-                // Procura tanto pelo titulo, setor, nome ou numeroOS
                 const textoGeral = (d.titulo + ' ' + d.setor + ' ' + d.solicitante + ' ' + (d.numeroOS || '')).toLowerCase();
                 const bateTexto = !filtroTexto || textoGeral.includes(filtroTexto);
                 return bateData && bateStatus && bateTexto;
@@ -781,7 +780,7 @@
                 const btnAvancar = d.status !== 'Concluído' ? `<button onclick="avancarStatus('${d.id}')" class="action-btn btn-check" title="Avançar"><i class="fas fa-arrow-right"></i></button>` : '';
                 const dataFormatada = new Date(d.data).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
                 
-                // MANTEM A TABELA LIMPA: Mostra apenas o d.titulo na coluna de Serviços (Como pedido pelo usuário!)
+                // TABELA LIMPA: Mostra apenas d.titulo sem o número de O.S. (conforme imagem de referência do usuário)
                 tr.innerHTML = `<td>${dataFormatada}</td><td><span class="badge" style="background:#94a3b8">${d.prioridade}</span></td><td><strong>${d.titulo}</strong><br><small style="color:var(--text-secondary)">${d.solicitante} - ${d.setor}</small></td><td><span class="badge ${badgeClass}">${d.status}</span></td><td>${tempoDisplay}</td><td style="min-width:160px">${btnAvancar}<button onclick="imprimirOS('${d.id}')" class="action-btn btn-print" title="Imprimir O.S."><i class="fas fa-print"></i></button><button onclick="editarDemanda('${d.id}')" class="action-btn btn-edit"><i class="fas fa-pen"></i></button><button onclick="deletarDemanda('${d.id}')" class="action-btn btn-delete"><i class="fas fa-trash"></i></button></td>`;
                 tbody.appendChild(tr);
             });
@@ -1143,15 +1142,18 @@
             });
         }
 
-        // --- FUNÇÃO DE IMPRESSÃO (NOVA E PADRÃO ÓRGÃO PÚBLICO) ---
+        // --- FUNÇÃO DE IMPRESSÃO (NOVA COM LOGO DIRETO DO GITHUB) ---
         window.imprimirOS = function(id) {
             const d = demandas.find(item => String(item.id) === String(id));
             if (!d) return;
 
             const dataAbertura = new Date(d.data).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
             
-            // Pega o número da O.S. que você digitou
+            // Pega o número da O.S. que foi digitado (ou usa ID como segurança)
             const numeroOS = d.numeroOS || d.id.toString().slice(-4); 
+            
+            // Cria o link absoluto baseando-se no endereço oficial da sua página (perfeito para o GitHub Pages)
+            const logoSrc = new URL('brasaosp.jpg', document.baseURI).href;
             
             const janelaImpressao = window.open('', '_blank', 'width=900,height=700');
             
@@ -1186,10 +1188,10 @@
                 <body>
                     <div class="os-container">
                         <table>
-                          </td>
+                            <tr>
                                 <td width="15%" class="text-center" style="vertical-align: middle;">
-                                <div class="logo-sp">Brasão<br>SP</div>
-                          </td>
+                                    <img src="${logoSrc}" style="width: 65px; height: auto;" alt="Governo SP" onload="setTimeout(function(){ window.print(); window.close(); }, 300);" onerror="setTimeout(function(){ window.print(); window.close(); }, 300);">
+                                </td>
                                 <td width="70%" class="text-center" style="vertical-align: middle;">
                                     <div class="header-title">GOVERNO DO ESTADO DE SÃO PAULO</div>
                                     <div class="header-subtitle">SECRETARIA DA EDUCAÇÃO</div>
@@ -1303,15 +1305,6 @@
                     <div class="footer-note">
                         Documento impresso através do Sistema de Gestão Predial (DZEL/SEDUC) em ${new Date().toLocaleString('pt-BR')}
                     </div>
-
-                    <script>
-                        window.onload = function() {
-                            setTimeout(function() {
-                                window.print();
-                                window.close();
-                            }, 500); 
-                        };
-                    <\/script>
                 </body>
                 </html>
             `);
@@ -1326,7 +1319,6 @@
             
             if (tipo === 'demandas') { 
                 dadosRaw = demandas; nomeArquivo = "Relatorio_Demandas.xlsx"; 
-                // A coluna O.S. agora vai pro Excel perfeitamente!
                 dadosFormatados = dadosRaw.map(d => ({ "Data": formatarData(d.data), "O.S.": d.numeroOS || "-", "Prioridade": d.prioridade, "Título": d.titulo, "Setor": d.setor, "Solicitante": d.solicitante, "Status": d.status, "Conclusão": d.dataFim ? formatarDataHora(d.dataFim) : "-" })); 
             } else if (tipo === 'visitantes') { 
                 dadosRaw = visitantes; nomeArquivo = "Relatorio_Visitantes.xlsx"; 
@@ -1351,4 +1343,3 @@
     </script>
 </body>
 </html>
-
