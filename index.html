@@ -580,11 +580,11 @@
 
         // --- LÓGICA DE LOGIN (COM BASE64 E PROTEÇÃO CONTRA MAIÚSCULAS) ---
         const CREDENCIAIS = {
-            'admin': { passMask: 'YWRtaW4yNDUx', role: 'admin', nome: 'Administrador' }, // YWRtaW4yNDUx = admin2451
-            'zeladoria': { passMask: 'emVsYWRvcmlh', role: 'zeladoria', nome: 'Zeladoria' }, // emVsYWRvcmlh = zeladoria
-            'portaria': { passMask: 'cG9ydGFyaWE=', role: 'portaria', nome: 'Portaria' }, // cG9ydGFyaWE= = portaria
-            'recepcao': { passMask: 'cmVjZXBjYW8=', role: 'recepcao', nome: 'Recepção' } // cmVjZXBjYW8= = recepcao
-        };
+    'admin': { passMask: 'YWRtaW4yNDUx', role: 'admin', nome: 'Administrador' },
+    'zeladoria': { passMask: 'emVsYWRvcmlh', role: 'zeladoria', nome: 'Zeladoria' },
+    'portaria': { passMask: 'cG9ydGFyaWE=', role: 'portaria', nome: 'Portaria' },
+    'recepcao': { passMask: 'cmVjZXBjYW8=', role: 'recepcao', nome: 'Recepção' }
+       };
         let currentUserRole = null;
 
         const usuarioSalvo = localStorage.getItem('zeladoria_user');
@@ -1375,3 +1375,4 @@
     </script>
 </body>
 </html>
+
