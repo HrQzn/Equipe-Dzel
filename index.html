@@ -52,14 +52,7 @@
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-primary); height: 100vh; overflow: hidden; display: flex; }
         
         .uppercase-input { text-transform: uppercase; }
-        
-        /* CORREÇÃO APLICADA AQUI: Ajuste dos dois pontos do ::placeholder para aplicar as maiúsculas visualmente */
-        input:not(.login-input)[type="text"], 
-        textarea:not(.login-input), 
-        input:not(.login-input)[type="text"]::placeholder, 
-        textarea:not(.login-input)::placeholder { 
-            text-transform: uppercase; 
-        }
+        input:not(.login-input)[type="text"], textarea:not(.login-input), input:not(.login-input)[type="text"]::placeholder, textarea:not(.login-input):::placeholder { text-transform: uppercase; }
 
         /* --- TELA DE LOGIN --- */
         .login-wrapper { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); z-index: 9999; display: flex; justify-content: center; align-items: center; padding: 20px; }
@@ -539,7 +532,7 @@
         let eventos = [];
         let ocorrencias = [];
 
-        // --- FORÇAR MAIÚSCULAS NOS CAMPOS DE TEXTO ENQUANTO DIGITA ---
+        // --- FORÇAR MAIÚSCULAS NOS CAMPOS DE TEXTO (COM CURSOR SEGURO) ---
         document.addEventListener('input', function(e) {
             if (e.target.matches('input:not(.login-input)[type="text"], textarea:not(.login-input)')) {
                 const start = e.target.selectionStart;
@@ -717,7 +710,7 @@
             
             const novaDemanda = {
                 id: id,
-                numeroOS: document.getElementById('demanda-numero-os').value.trim(),
+                numeroOS: document.getElementById('demanda-numero-os').value.trim(), 
                 titulo: document.getElementById('demanda-titulo').value.toUpperCase(),
                 setor: document.getElementById('demanda-setor').value.toUpperCase(),
                 solicitante: document.getElementById('demanda-solicitante').value.toUpperCase(),
@@ -780,7 +773,7 @@
             const lista = demandas.filter(d => {
                 const bateData = !filtroMes || d.data.startsWith(filtroMes);
                 const bateStatus = !filtroStatus || d.status === filtroStatus;
-                const textoGeral = (d.titulo + ' ' + d.setor + ' ' + d.solicitante + ' ' + (d.numeroOS || '')).toLowerCase();
+                const textoGeral = (d.titulo + ' ' + d.setor + ' ' + d.solicitante).toLowerCase();
                 const bateTexto = !filtroTexto || textoGeral.includes(filtroTexto);
                 return bateData && bateStatus && bateTexto;
             });
@@ -797,7 +790,7 @@
                 const btnAvancar = d.status !== 'Concluído' ? `<button onclick="avancarStatus('${d.id}')" class="action-btn btn-check" title="Avançar"><i class="fas fa-arrow-right"></i></button>` : '';
                 const dataFormatada = new Date(d.data).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
                 
-                // MANTEM A TABELA LIMPA: Mostra apenas o d.titulo na coluna de Serviços
+                // Exibição Limpa: Remove o número da O.S. da tabela como solicitado.
                 tr.innerHTML = `<td>${dataFormatada}</td><td><span class="badge" style="background:#94a3b8">${d.prioridade}</span></td><td><strong>${d.titulo}</strong><br><small style="color:var(--text-secondary)">${d.solicitante} - ${d.setor}</small></td><td><span class="badge ${badgeClass}">${d.status}</span></td><td>${tempoDisplay}</td><td style="min-width:160px">${btnAvancar}<button onclick="imprimirOS('${d.id}')" class="action-btn btn-print" title="Imprimir O.S."><i class="fas fa-print"></i></button><button onclick="editarDemanda('${d.id}')" class="action-btn btn-edit"><i class="fas fa-pen"></i></button><button onclick="deletarDemanda('${d.id}')" class="action-btn btn-delete"><i class="fas fa-trash"></i></button></td>`;
                 tbody.appendChild(tr);
             });
@@ -1159,20 +1152,26 @@
             });
         }
 
-        // --- FUNÇÃO DE IMPRESSÃO (NOVA COM LOGO DIRETO DO GITHUB) ---
+        // --- FUNÇÃO DE IMPRESSÃO (CORREÇÃO ABSOLUTA DO GITHUB PAGES) ---
         window.imprimirOS = function(id) {
             const d = demandas.find(item => String(item.id) === String(id));
             if (!d) return;
 
             const dataAbertura = new Date(d.data).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
             
-            // Pega o número da O.S. que foi digitado (ou usa ID como segurança)
             const numeroOS = d.numeroOS || d.id.toString().slice(-4); 
             
-            // Busca o seu arquivo exato brasaosp.jpg direto da raiz do seu site no GitHub
-            const logoSrc = new URL('brasaosp.jpg', document.baseURI).href;
+            // Corrige exatamente como o GitHub Pages encontra a imagem (mesma pasta do index)
+            let baseUrl = window.location.href;
+            if (baseUrl.includes('index.html')) {
+                baseUrl = baseUrl.replace('index.html', '');
+            }
+            if (!baseUrl.endsWith('/')) {
+                baseUrl += '/';
+            }
+            const logoSrc = baseUrl + 'brasaosp.jpg';
             
-            const janelaImpressao = window.open('', '_blank', 'width=900,height=700');
+            const janelaImpressao = window.open('', '_blank');
             
             janelaImpressao.document.write(`
                 <!DOCTYPE html>
@@ -1207,7 +1206,7 @@
                         <table>
                             <tr>
                                 <td width="15%" class="text-center" style="vertical-align: middle;">
-                                    <img src="${logoSrc}" style="width: 65px; height: auto;" alt="Governo SP" onload="window.print(); window.close();" onerror="window.print(); window.close();">
+                                    <img src="${logoSrc}" style="width: 65px; height: auto;" alt="Governo SP">
                                 </td>
                                 <td width="70%" class="text-center" style="vertical-align: middle;">
                                     <div class="header-title">GOVERNO DO ESTADO DE SÃO PAULO</div>
@@ -1322,6 +1321,21 @@
                     <div class="footer-note">
                         Documento impresso através do Sistema de Gestão Predial (DZEL/SEDUC) em ${new Date().toLocaleString('pt-BR')}
                     </div>
+
+                    <script>
+                        // AQUI ESTÁ A CORREÇÃO:
+                        // Aguarda 0.5 segundos para o GitHub entregar a imagem, e só então abre a impressora.
+                        window.onload = function() {
+                            setTimeout(function() {
+                                window.print();
+                            }, 500); 
+                        };
+                        
+                        // Fecha a aba de impressão assim que você clicar em "Imprimir" ou "Cancelar"
+                        window.onafterprint = function() {
+                            window.close();
+                        };
+                    <\/script>
                 </body>
                 </html>
             `);
