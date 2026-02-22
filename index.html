@@ -578,12 +578,12 @@
             }
         }
 
-        // --- LOGICA ORIGINAL DE LOGIN ---
+        // --- LÓGICA DE LOGIN (COM BASE64 E PROTEÇÃO CONTRA MAIÚSCULAS) ---
         const CREDENCIAIS = {
-            'admin': { pass: 'admin2451', role: 'admin', nome: 'Administrador' },
-            'zeladoria': { pass: 'zeladoria', role: 'zeladoria', nome: 'Zeladoria' },
-            'portaria': { pass: 'portaria', role: 'portaria', nome: 'Portaria' },
-            'recepcao': { pass: 'recepcao', role: 'recepcao', nome: 'Recepção' }
+            'admin': { passMask: 'YWRtaW4yNDUx', role: 'admin', nome: 'Administrador' }, // YWRtaW4yNDUx = admin2451
+            'zeladoria': { passMask: 'emVsYWRvcmlh', role: 'zeladoria', nome: 'Zeladoria' }, // emVsYWRvcmlh = zeladoria
+            'portaria': { passMask: 'cG9ydGFyaWE=', role: 'portaria', nome: 'Portaria' }, // cG9ydGFyaWE= = portaria
+            'recepcao': { passMask: 'cmVjZXBjYW8=', role: 'recepcao', nome: 'Recepção' } // cmVjZXBjYW8= = recepcao
         };
         let currentUserRole = null;
 
@@ -599,8 +599,13 @@
 
         window.fazerLogin = function() {
             const userKey = document.getElementById('login-user').value.trim().toLowerCase();
-            const pass = document.getElementById('login-pass').value.trim();
-            if (CREDENCIAIS[userKey] && CREDENCIAIS[userKey].pass === pass) {
+            // Pega a senha e já força para minúscula, para evitar erros de teclado de celular
+            const passOriginal = document.getElementById('login-pass').value.trim().toLowerCase(); 
+            
+            // Converte a senha digitada para o código mascarado
+            const passDigitadaMask = btoa(passOriginal);
+
+            if (CREDENCIAIS[userKey] && CREDENCIAIS[userKey].passMask === passDigitadaMask) {
                 currentUserRole = CREDENCIAIS[userKey].role;
                 localStorage.setItem('zeladoria_user', JSON.stringify(CREDENCIAIS[userKey]));
                 iniciarSistema(CREDENCIAIS[userKey]);
@@ -773,7 +778,7 @@
             const lista = demandas.filter(d => {
                 const bateData = !filtroMes || d.data.startsWith(filtroMes);
                 const bateStatus = !filtroStatus || d.status === filtroStatus;
-                const textoGeral = (d.titulo + ' ' + d.setor + ' ' + d.solicitante).toLowerCase();
+                const textoGeral = (d.titulo + ' ' + d.setor + ' ' + d.solicitante + ' ' + (d.numeroOS || '')).toLowerCase();
                 const bateTexto = !filtroTexto || textoGeral.includes(filtroTexto);
                 return bateData && bateStatus && bateTexto;
             });
@@ -790,7 +795,6 @@
                 const btnAvancar = d.status !== 'Concluído' ? `<button onclick="avancarStatus('${d.id}')" class="action-btn btn-check" title="Avançar"><i class="fas fa-arrow-right"></i></button>` : '';
                 const dataFormatada = new Date(d.data).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
                 
-                // Exibição Limpa: Remove o número da O.S. da tabela como solicitado.
                 tr.innerHTML = `<td>${dataFormatada}</td><td><span class="badge" style="background:#94a3b8">${d.prioridade}</span></td><td><strong>${d.titulo}</strong><br><small style="color:var(--text-secondary)">${d.solicitante} - ${d.setor}</small></td><td><span class="badge ${badgeClass}">${d.status}</span></td><td>${tempoDisplay}</td><td style="min-width:160px">${btnAvancar}<button onclick="imprimirOS('${d.id}')" class="action-btn btn-print" title="Imprimir O.S."><i class="fas fa-print"></i></button><button onclick="editarDemanda('${d.id}')" class="action-btn btn-edit"><i class="fas fa-pen"></i></button><button onclick="deletarDemanda('${d.id}')" class="action-btn btn-delete"><i class="fas fa-trash"></i></button></td>`;
                 tbody.appendChild(tr);
             });
@@ -1152,16 +1156,14 @@
             });
         }
 
-        // --- FUNÇÃO DE IMPRESSÃO (CORREÇÃO ABSOLUTA DO GITHUB PAGES) ---
+        // --- FUNÇÃO DE IMPRESSÃO DA O.S. ---
         window.imprimirOS = function(id) {
             const d = demandas.find(item => String(item.id) === String(id));
             if (!d) return;
 
             const dataAbertura = new Date(d.data).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
-            
             const numeroOS = d.numeroOS || d.id.toString().slice(-4); 
             
-            // Corrige exatamente como o GitHub Pages encontra a imagem (mesma pasta do index)
             let baseUrl = window.location.href;
             if (baseUrl.includes('index.html')) {
                 baseUrl = baseUrl.replace('index.html', '');
@@ -1319,19 +1321,18 @@
                     </div>
                     
                     <div class="footer-note">
-                        Documento impresso em ${new Date().toLocaleString('pt-BR')}
+                        Documento impresso através do Sistema de Gestão Predial (DZEL/SEDUC) em ${new Date().toLocaleString('pt-BR')}
                     </div>
 
                     <script>
-                        // AQUI ESTÁ A CORREÇÃO:
-                        // Aguarda 0.5 segundos para o GitHub entregar a imagem, e só então abre a impressora.
+                        // A impressora agora vai esperar a tela aparecer primeiro (500ms)
                         window.onload = function() {
                             setTimeout(function() {
                                 window.print();
                             }, 500); 
                         };
                         
-                        // Fecha a aba de impressão assim que você clicar em "Imprimir" ou "Cancelar"
+                        // Assim que a janela da impressora for fechada pelo usuário, a aba da O.S. fecha sozinha
                         window.onafterprint = function() {
                             window.close();
                         };
@@ -1374,4 +1375,3 @@
     </script>
 </body>
 </html>
-
