@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -49,11 +48,12 @@
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }        
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }
+        
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-primary); height: 100vh; overflow: hidden; display: flex; }
         
         .uppercase-input { text-transform: uppercase; }
-        input:not(.login-input)[type="text"], textarea:not(.login-input), input:not(.login-input)[type="text"]::placeholder, textarea:not(.login-input):::placeholder { text-transform: uppercase; }
+        input:not(.login-input)[type="text"], textarea:not(.login-input), input:not(.login-input)[type="text"]::placeholder, textarea:not(.login-input)::placeholder { text-transform: uppercase; }
 
         /* --- TELA DE LOGIN --- */
         .login-wrapper { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); z-index: 9999; display: flex; justify-content: center; align-items: center; padding: 20px; }
@@ -476,8 +476,11 @@
                             <form id="form-ocorrencia">
                                 <input type="hidden" id="ocorrencia-id-edit" value="">
                                 <div class="form-grid">
+                                    <div><label>Nº do Registro</label><input type="text" id="oco-numero" placeholder="Ex: 001/2026"></div>
                                     <div><label>Unidade / Prédio</label><input type="text" id="oco-unidade" required></div>
                                     <div><label>Local / Setor</label><input type="text" id="oco-local" required></div>
+                                    <div><label>Contratada</label><input type="text" id="oco-contratada" placeholder="Nome da empresa"></div>
+                                    
                                     <div><label>Categoria</label>
                                         <select id="oco-categoria">
                                             <option value="Segurança">Segurança</option><option value="Manutenção">Manutenção</option>
@@ -490,6 +493,7 @@
                                     <div><label>Gravidade</label><select id="oco-gravidade"><option value="Baixa">Baixa</option><option value="Média">Média</option><option value="Alta">Alta</option><option value="Crítica">Crítica</option></select></div>
                                     <div><label>Data/Hora</label><input type="datetime-local" id="oco-data" required></div>
                                     <div><label>Responsável</label><input type="text" id="oco-responsavel" required></div>
+                                    
                                     <div style="grid-column: 1/-1"><label>Descrição Detalhada</label><textarea id="oco-descricao" rows="3" required></textarea></div>
                                     <div id="div-status-oco" style="display:none"><label>Status Atual</label><select id="oco-status-edit"><option value="Aberta">Aberta</option><option value="Em Tratativa">Em Tratativa</option><option value="Encerrada">Encerrada</option></select></div>
                                 </div>
@@ -1119,7 +1123,20 @@
             const idEdicao = document.getElementById('ocorrencia-id-edit').value;
             const id = idEdicao || Date.now();
             const statusNovo = idEdicao ? document.getElementById('oco-status-edit').value : 'Aberta';
-            const novaOcorrencia = { id: id, unidade: document.getElementById('oco-unidade').value.toUpperCase(), local: document.getElementById('oco-local').value.toUpperCase(), categoria: document.getElementById('oco-categoria').value, gravidade: document.getElementById('oco-gravidade').value, data: document.getElementById('oco-data').value, responsavel: document.getElementById('oco-responsavel').value.toUpperCase(), descricao: document.getElementById('oco-descricao').value.toUpperCase(), status: statusNovo, dataEncerramento: null };
+            const novaOcorrencia = { 
+                id: id, 
+                numero: document.getElementById('oco-numero').value.toUpperCase(),
+                unidade: document.getElementById('oco-unidade').value.toUpperCase(), 
+                local: document.getElementById('oco-local').value.toUpperCase(), 
+                contratada: document.getElementById('oco-contratada').value.toUpperCase(),
+                categoria: document.getElementById('oco-categoria').value, 
+                gravidade: document.getElementById('oco-gravidade').value, 
+                data: document.getElementById('oco-data').value, 
+                responsavel: document.getElementById('oco-responsavel').value.toUpperCase(), 
+                descricao: document.getElementById('oco-descricao').value.trim().toUpperCase(), 
+                status: statusNovo, 
+                dataEncerramento: null 
+            };
             if(idEdicao) {
                 const ant = ocorrencias.find(o => String(o.id) === String(id));
                 if(statusNovo === 'Encerrada' && (!ant || ant.status !== 'Encerrada')) novaOcorrencia.dataEncerramento = new Date().toISOString();
@@ -1136,14 +1153,33 @@
         
         window.editarOcorrencia = function(id) {
             const o = ocorrencias.find(i => String(i.id) === String(id)); if(!o) return;
-            document.getElementById('ocorrencia-id-edit').value = o.id; document.getElementById('oco-unidade').value = o.unidade; document.getElementById('oco-local').value = o.local; document.getElementById('oco-categoria').value = o.categoria; document.getElementById('oco-gravidade').value = o.gravidade; document.getElementById('oco-data').value = o.data; document.getElementById('oco-responsavel').value = o.responsavel; document.getElementById('oco-descricao').value = o.descricao;
-            document.getElementById('titulo-form-ocorrencia').innerHTML = '<i class="fas fa-edit"></i> Editando Ocorrência'; document.getElementById('btn-submit-oco').innerText = "Salvar Alterações"; document.getElementById('btn-cancel-oco').style.display = "block"; document.getElementById('div-status-oco').style.display = "block"; document.getElementById('oco-status-edit').value = o.status;
+            document.getElementById('ocorrencia-id-edit').value = o.id; 
+            document.getElementById('oco-numero').value = o.numero || '';
+            document.getElementById('oco-unidade').value = o.unidade; 
+            document.getElementById('oco-local').value = o.local; 
+            document.getElementById('oco-contratada').value = o.contratada || '';
+            document.getElementById('oco-categoria').value = o.categoria; 
+            document.getElementById('oco-gravidade').value = o.gravidade; 
+            document.getElementById('oco-data').value = o.data; 
+            document.getElementById('oco-responsavel').value = o.responsavel; 
+            document.getElementById('oco-descricao').value = o.descricao;
+            
+            document.getElementById('titulo-form-ocorrencia').innerHTML = '<i class="fas fa-edit"></i> Editando Ocorrência'; 
+            document.getElementById('btn-submit-oco').innerText = "Salvar Alterações"; 
+            document.getElementById('btn-cancel-oco').style.display = "block"; 
+            document.getElementById('div-status-oco').style.display = "block"; 
+            document.getElementById('oco-status-edit').value = o.status;
             document.getElementById('ocorrencias').scrollIntoView({behavior:'smooth'});
         }
         
         window.cancelarEdicaoOcorrencia = function() {
-            document.getElementById('ocorrencia-id-edit').value = ""; formOcorrencia.reset(); document.getElementById('oco-data').value = getLocalISO();
-            document.getElementById('titulo-form-ocorrencia').innerHTML = '<i class="fas fa-exclamation-triangle" style="color:var(--ocorrencia)"></i> Registrar Ocorrência'; document.getElementById('btn-submit-oco').innerText = "Registrar Ocorrência"; document.getElementById('btn-cancel-oco').style.display = "none"; document.getElementById('div-status-oco').style.display = "none";
+            document.getElementById('ocorrencia-id-edit').value = ""; 
+            formOcorrencia.reset(); 
+            document.getElementById('oco-data').value = getLocalISO();
+            document.getElementById('titulo-form-ocorrencia').innerHTML = '<i class="fas fa-exclamation-triangle" style="color:var(--ocorrencia)"></i> Registrar Ocorrência'; 
+            document.getElementById('btn-submit-oco').innerText = "Registrar Ocorrência"; 
+            document.getElementById('btn-cancel-oco').style.display = "none"; 
+            document.getElementById('div-status-oco').style.display = "none";
         }
         
         window.deletarOcorrencia = function(id) { 
@@ -1158,7 +1194,7 @@
             const lista = ocorrencias.filter(o => { 
                 const bMes = !mes || o.data.startsWith(mes); 
                 const bStat = !stat || o.status === stat; 
-                const bTxt = !termo || (o.unidade+o.local+o.categoria+o.descricao+o.responsavel).toLowerCase().includes(termo); return bMes && bStat && bTxt; 
+                const bTxt = !termo || (o.unidade+o.local+o.categoria+o.descricao+o.responsavel+(o.numero||'')).toLowerCase().includes(termo); return bMes && bStat && bTxt; 
             });
             document.getElementById('dash-oco-total').innerText = lista.length; document.getElementById('dash-oco-abertas').innerText = lista.filter(o => o.status === 'Aberta').length; document.getElementById('dash-oco-tratativa').innerText = lista.filter(o => o.status === 'Em Tratativa').length; document.getElementById('dash-oco-encerradas').innerText = lista.filter(o => o.status === 'Encerrada').length;
             const tbody = document.querySelector('#tabela-ocorrencias tbody'); tbody.innerHTML = '';
@@ -1168,12 +1204,134 @@
                 const statMap = {'Aberta':'bg-estacionado','Em Tratativa':'bg-andamento','Encerrada':'bg-concluido'}; const badgeStat = `<span class="badge ${statMap[o.status]}">${o.status}</span>`;
                 const tempo = o.status === 'Encerrada' && o.dataEncerramento ? `<span class="time-badge"><i class="fas fa-check"></i> ${calcularTempoDecorrido(o.data, o.dataEncerramento)}</span>` : `<span class="time-badge"><i class="fas fa-clock"></i> ${calcularTempoDecorrido(o.data)}</span>`;
                 let btnExcluir = currentUserRole === 'admin' ? `<button onclick="deletarOcorrencia('${o.id}')" class="action-btn btn-delete"><i class="fas fa-trash"></i></button>` : '';
-                tr.innerHTML = `<td>${formatarDataHora(o.data)}</td><td>${badgeGrav}</td><td><strong>${o.categoria}</strong><br><small>${o.unidade} - ${o.local}</small></td><td>${o.descricao.substring(0,50)}...<br><small style="color:var(--text-secondary)">Resp: ${o.responsavel}</small></td><td>${badgeStat}</td><td>${tempo}</td><td style="min-width:100px"><button onclick="editarOcorrencia('${o.id}')" class="action-btn btn-edit"><i class="fas fa-pen"></i></button>${btnExcluir}</td>`;
+                
+                const textoTitulo = o.numero ? `<strong>#${o.numero} - ${o.categoria}</strong>` : `<strong>${o.categoria}</strong>`;
+
+                tr.innerHTML = `<td>${formatarDataHora(o.data)}</td><td>${badgeGrav}</td><td>${textoTitulo}<br><small>${o.unidade} - ${o.local}</small></td><td>${o.descricao.substring(0,50)}...<br><small style="color:var(--text-secondary)">Resp: ${o.responsavel}</small></td><td>${badgeStat}</td><td>${tempo}</td><td style="min-width:140px"><button onclick="imprimirRO('${o.id}')" class="action-btn btn-print" title="Imprimir R.O."><i class="fas fa-print"></i></button><button onclick="editarOcorrencia('${o.id}')" class="action-btn btn-edit"><i class="fas fa-pen"></i></button>${btnExcluir}</td>`;
                 tbody.appendChild(tr);
             });
         }
 
-        // --- FUNÇÃO DE IMPRESSÃO ---
+        // --- FUNÇÃO DE IMPRESSÃO R.O (OCORRÊNCIAS) ---
+        window.imprimirRO = function(id) {
+            const o = ocorrencias.find(item => String(item.id) === String(id));
+            if (!o) return;
+
+            const dataObj = new Date(o.data);
+            const dataStr = dataObj.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric'});
+            const horaStr = dataObj.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+            
+            // Corrige o recuo, garante texto limpo e converte quebras de linha para HTML
+            const textoHistorico = o.descricao ? o.descricao.trim().replace(/\n/g, '<br>') : '';
+            
+            let baseUrl = window.location.href;
+            if (baseUrl.includes('index.html')) baseUrl = baseUrl.replace('index.html', '');
+            if (!baseUrl.endsWith('/')) baseUrl += '/';
+            const logoSrc = baseUrl + 'brasaosp.jpg';
+
+            const janelaImpressao = window.open('', '_blank');
+            janelaImpressao.document.write(`
+                <!DOCTYPE html>
+                <html lang="pt-BR">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>R.O - Registro de Ocorrência</title>
+                    <style>
+                        @page { size: A4 portrait; margin: 15mm; }
+                        body { font-family: 'Arial', sans-serif; font-size: 12px; color: #000; margin: 0; padding: 0; line-height: 1.4; position: relative; }
+                        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+                        th, td { border: 1px solid #000; padding: 6px; text-align: left; vertical-align: middle; }
+                        .header-table { border: none; margin-bottom: 10px; }
+                        .header-table td { border: none; padding: 0; }
+                        .text-center { text-align: center; }
+                        .bold { font-weight: bold; }
+                        .section-title { font-weight: bold; font-size: 13px; margin: 15px 0 5px 0; }
+                        .history-box { width: 100%; min-height: 450px; border: 1px solid #000; padding: 10px 15px; box-sizing: border-box; background: repeating-linear-gradient(transparent, transparent 24px, #999 24px, #999 25px); line-height: 25px; margin-top: 5px; text-align: justify; }
+                    </style>
+                </head>
+                <body>
+                    <table class="header-table">
+                        <tr>
+                            <td width="20%" class="text-center">
+                                <img src="${logoSrc}" style="width: 70px; height: auto;" alt="Logo SP">
+                            </td>
+                            <td width="80%" class="text-center" style="padding-right: 20px;">
+                                <div style="font-size: 16px; font-weight: bold;">GOVERNO DO ESTADO DE SÃO PAULO</div>
+                                <div style="font-size: 14px; margin-top: 3px;">COORDENADORIA GERAL DE SUPORTE ADMINISTRATIVO</div>
+                                <div style="font-size: 14px;">Divisão de Zeladoria (DZEL)</div>
+                                <div style="font-size: 14px; font-weight: bold; margin-top: 10px;">REGISTRO DE OCORRÊNCIA</div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div class="section-title">1 – Dados do Registro:</div>
+                    <table>
+                        <tr>
+                            <td width="20%">Nº do Registro:</td><td width="40%" class="bold">${o.numero || '-'}</td>
+                            <td width="15%">Status:</td><td width="25%" class="bold">${(o.status || '').toUpperCase()}</td>
+                        </tr>
+                        <tr>
+                            <td>Dia / Mês / Ano:</td><td class="bold">${dataStr}</td>
+                            <td>Horário:</td><td class="bold">${horaStr}</td>
+                        </tr>
+                        <tr>
+                            <td>Nome do autor:</td><td class="bold">${(o.responsavel || '').toUpperCase()}</td>
+                            <td>Contratada:</td><td class="bold">${(o.contratada || '-').toUpperCase()}</td>
+                        </tr>
+                        <tr>
+                            <td>Unidade:</td><td class="bold">${(o.unidade || '').toUpperCase()}</td>
+                            <td>Setor/Local:</td><td class="bold">${(o.local || '').toUpperCase()}</td>
+                        </tr>
+                    </table>
+
+                    <div class="section-title">2 - Dados da Ocorrência:</div>
+                    <table>
+                        <tr>
+                            <td width="20%">Dia / Mês / Ano:</td><td width="40%" class="bold">${dataStr}</td>
+                            <td width="15%">Horário:</td><td width="25%" class="bold">${horaStr}</td>
+                        </tr>
+                        <tr>
+                            <td>Posto de serviço:</td><td class="bold">${(o.unidade || '').toUpperCase()} - ${(o.local || '').toUpperCase()}</td>
+                            <td>Cidade:</td><td class="bold">SÃO PAULO</td>
+                        </tr>
+                        <tr>
+                            <td>Tipo de ocorrência:</td><td class="bold">${(o.categoria || '').toUpperCase()}</td>
+                            <td>Gravidade:</td><td class="bold">${(o.gravidade || '').toUpperCase()}</td>
+                        </tr>
+                        <tr>
+                            <td>Título da ocorrência:</td><td colspan="3" class="bold">OCORRÊNCIA DE ${(o.categoria || '').toUpperCase()} - ${(o.unidade || '').toUpperCase()}</td>
+                        </tr>
+                    </table>
+
+                    <div class="section-title">3 – Histórico:</div>
+                    <div class="history-box">${textoHistorico}</div>
+
+                    <table style="margin-top: 15px;">
+                        <tr>
+                            <td width="15%">Assinatura:</td><td width="55%"></td>
+                            <td width="10%">Matrícula:</td><td width="20%"></td>
+                        </tr>
+                    </table>
+                    
+                    <table>
+                        <tr>
+                            <td width="15%" class="bold">OBSERVAÇÃO</td>
+                            <td width="85%" style="height: 35px;"></td>
+                        </tr>
+                    </table>
+                    
+                    <script>
+                        window.onload = function() { setTimeout(function() { window.print(); }, 800); };
+                        window.onafterprint = function() { window.close(); };
+                    <\/script>
+                </body>
+                </html>
+            `);
+            janelaImpressao.document.close();
+            janelaImpressao.focus();
+        }
+
+        // --- FUNÇÃO DE IMPRESSÃO O.S. (DEMANDAS) ---
         window.imprimirOS = function(id) {
             const d = demandas.find(item => String(item.id) === String(id));
             if (!d) return;
@@ -1277,8 +1435,8 @@
                                         <div class="checkbox-item"><div class="box"></div> MANUTENÇÃO PREDIAL</div>
                                         <div class="checkbox-item"><div class="box"></div> MANUTENÇÃO DE ELEVADORES</div>
                                         <div class="checkbox-item"><div class="box"></div> SUPORTE TI</div>
-                                        <div class="checkbox-item"><div class="box"></div> TELEFONIA</div>
-                                         <div class="checkbox-item"><div class="box"></div> MANUTENÇÃO E RECARGA DE EXTINTORES</div>
+                                        <div class="checkbox-item"><div class="box"></div> TELEFONIA</div> 
+                                        <div class="checkbox-item"><div class="box"></div> MANUTENÇÃO E RECARGA DE EXTINTORES</div>
                                         <div class="checkbox-item"><div class="box"></div> OUTROS: ___________________________</div>
                                     </div>
                                 </td>
@@ -1382,7 +1540,7 @@
                 dadosFormatados = dadosRaw.map(e => ({ "Data": formatarData(e.data), "Evento": e.nome, "Tipo": e.tipo, "Organizador": e.organizador, "Local": e.local, "Público Est.": e.publico, "Coffee Break": e.coffee ? "Sim" : "Não", "Observações": e.obs })); 
             } else if (tipo === 'ocorrencias') { 
                 dadosRaw = ocorrencias; nomeArquivo = "Relatorio_Ocorrencias.xlsx"; 
-                dadosFormatados = dadosRaw.map(o => ({ "Data": formatarDataHora(o.data), "Unidade": o.unidade, "Local": o.local, "Categoria": o.categoria, "Gravidade": o.gravidade, "Descrição": o.descricao, "Responsável": o.responsavel, "Status": o.status, "Encerramento": o.dataEncerramento ? formatarDataHora(o.dataEncerramento) : "-" })); 
+                dadosFormatados = dadosRaw.map(o => ({ "Nº do Registro": o.numero || "-", "Data": formatarDataHora(o.data), "Unidade": o.unidade, "Local": o.local, "Contratada": o.contratada || "-", "Categoria": o.categoria, "Gravidade": o.gravidade, "Descrição": o.descricao, "Responsável": o.responsavel, "Status": o.status, "Encerramento": o.dataEncerramento ? formatarDataHora(o.dataEncerramento) : "-" })); 
             }
             
             if (dadosFormatados.length === 0) { alert("Não há dados para exportar nesta tabela."); return; }
@@ -1394,4 +1552,3 @@
     </script>
 </body>
 </html>
-
