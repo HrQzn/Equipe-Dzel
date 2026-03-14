@@ -207,12 +207,13 @@
         .btn-foto { background: var(--text-secondary); color: white; padding: 8px 16px; border-radius: var(--radius-md); cursor: pointer; font-size: 0.85rem; border: none; display: inline-flex; align-items: center; gap: 6px; }
         .btn-webcam { background: var(--primary); }
 
-        /* Estilos de Impressão Nativa (Celular e PC) */
+        /* Estilos de Impressão Nativa (Celular e PC) - Nível 2 */
         #print-container { display: none; background: white; width: 100%; min-height: 100vh; }
         @media print {
-            body { display: block !important; height: auto !important; overflow: visible !important; background: white !important; }
-            #mobile-overlay, #login-overlay, #app-content { display: none !important; }
+            body, html { height: 100% !important; background: white !important; overflow: auto !important; }
+            #app-content, #login-overlay, .mobile-overlay { display: none !important; }
             #print-container { display: block !important; }
+            @page { margin: 10mm; size: A4 portrait; }
         }
     </style>
 </head>
@@ -1346,20 +1347,8 @@
             
             printContainer.innerHTML = htmlContent;
             
-            // TRUQUE PARA MOBILE: Oculta fisicamente o app inteiro da tela
-            const appContent = document.getElementById('app-content');
-            appContent.style.setProperty('display', 'none', 'important');
-            printContainer.style.setProperty('display', 'block', 'important');
-            
             setTimeout(() => {
                 window.print();
-                
-                // Restaura o app após a janela de impressão abrir
-                setTimeout(() => {
-                    appContent.style.setProperty('display', 'flex', 'important');
-                    printContainer.style.setProperty('display', 'none', 'important');
-                    printContainer.innerHTML = '';
-                }, 1500);
             }, 500);
         }
 
@@ -1476,7 +1465,7 @@
             if (baseUrl.includes('index.html')) { baseUrl = baseUrl.replace('index.html', ''); }
             if (!baseUrl.endsWith('/')) { baseUrl += '/'; }
             const logoSrc = baseUrl + 'brasaosp.jpg';
-            
+
             const htmlContent = `
                 <style>
                     @page { size: A4 portrait; margin: 12mm; }
