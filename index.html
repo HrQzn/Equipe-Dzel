@@ -160,6 +160,7 @@
         .btn-edit { background-color: var(--warning); }
         .btn-print { background-color: var(--info); }
         .btn-baixa { background-color: var(--danger); }
+        .btn-whatsapp { background-color: #25D366; }
 
         /* Filtros e Responsividade */
         .filter-container { background-color: #f8fafc; padding: 16px; border-radius: var(--radius-md); border: 1px solid #e5e7eb; display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; margin-bottom: 20px; }
@@ -194,6 +195,20 @@
         
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Estilos Webcam Comum */
+        .foto-container { text-align: center; padding: 20px; border: 2px dashed #e5e7eb; border-radius: var(--radius-lg); background: #f9fafb; margin-bottom: 16px; }
+        .foto-preview { width: 120px; height: 120px; border-radius: 8px; object-fit: cover; margin-bottom: 16px; border: 2px solid white; box-shadow: var(--shadow-md); }
+        .avatar-table { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; vertical-align: middle; margin-right: 12px; border: 2px solid white; box-shadow: var(--shadow-sm); }
+        .webcam-controls { display: flex; gap: 10px; width: 100%; }
+        .btn-snap { background: var(--success); color: white; flex: 1; border: none; padding: 8px; border-radius: var(--radius-md); font-weight: bold; }
+        .btn-close-cam { background: var(--danger); color: white; border: none; padding: 8px 15px; border-radius: var(--radius-md); }
+        .botoes-foto-wrapper { display: flex; gap: 10px; justify-content: center; width: 100%; margin-top: 10px; }
+        .btn-foto { background: var(--text-secondary); color: white; padding: 8px 16px; border-radius: var(--radius-md); cursor: pointer; font-size: 0.85rem; border: none; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-webcam { background: var(--primary); }
+
+        /* Estilos de Impressão Nativa (Celular e PC) */
+        #print-container { display: none; }
     </style>
 </head>
 <body>
@@ -294,6 +309,7 @@
                             <h2 id="titulo-form-demanda"><i class="fas fa-plus-circle" style="color:var(--primary)"></i> Nova Solicitação</h2>
                             <form id="form-demanda">
                                 <input type="hidden" id="demanda-id-edit" value="">
+                                
                                 <div class="form-grid">
                                     <div><label>Nº da O.S.</label><input type="text" id="demanda-numero-os" placeholder="Ex: 01"></div>
                                     <div><label>Descrição do Serviço</label><input type="text" id="demanda-titulo" required></div>
@@ -338,6 +354,24 @@
                             <h2 id="titulo-form-visitante"><i class="fas fa-user-plus" style="color:var(--recepcao)"></i> Cadastrar Visitante</h2>
                             <form id="form-visitante">
                                 <input type="hidden" id="visitante-id-edit" value="">
+                                
+                                <div class="foto-container">
+                                    <img id="vis-preview" class="foto-preview" style="border-radius: 50%" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Cpath fill='%23d1d5db' d='M50 50c-13.8 0-25-11.2-25-25s11.2-25 25-25 25 11.2 25 25-11.2 25-25 25zm0 10c16.7 0 50 8.3 50 25v15H0v-15c0-16.7 33.3-25 50-25z'/%3E%3C/svg%3E">
+                                    <div id="webcam-container" style="display: none; flex-direction: column; align-items: center; gap: 10px; margin-top: 10px; width: 100%;">
+                                        <video id="webcam-video" autoplay playsinline style="width: 100%; border-radius: 8px; background: #000; border: 2px solid #333; transform: scaleX(-1);"></video>
+                                        <div class="webcam-controls">
+                                            <button type="button" id="btn-snap" class="btn-snap"><i class="fas fa-camera"></i> Capturar</button>
+                                            <button type="button" id="btn-close-cam" class="btn-close-cam"><i class="fas fa-times"></i></button>
+                                        </div>
+                                    </div>
+                                    <div class="botoes-foto-wrapper" id="btns-foto-originais">
+                                        <label for="vis-foto-input" class="btn-foto"><i class="fas fa-upload"></i> Anexar Foto</label>
+                                        <button type="button" id="btn-open-webcam" class="btn-foto btn-webcam"><i class="fas fa-camera"></i> Câmera</button>
+                                    </div>
+                                    <input type="file" id="vis-foto-input" accept="image/*" capture="user" style="display:none">
+                                    <input type="hidden" id="vis-foto-base64">
+                                </div>
+
                                 <div class="form-grid">
                                     <div><label>Nome Completo</label><input type="text" id="vis-nome" required placeholder="NOME DO VISITANTE"></div>
                                     <div><label>Empresa</label><input type="text" id="vis-empresa" placeholder="EMPRESA / ÓRGÃO"></div>
@@ -475,6 +509,7 @@
                             <h2 id="titulo-form-ocorrencia"><i class="fas fa-exclamation-triangle" style="color:var(--ocorrencia)"></i> Registrar Ocorrência</h2>
                             <form id="form-ocorrencia">
                                 <input type="hidden" id="ocorrencia-id-edit" value="">
+                                
                                 <div class="form-grid">
                                     <div><label>Nº do Registro</label><input type="text" id="oco-numero" placeholder="Ex: 001/2026"></div>
                                     <div><label>Unidade / Prédio</label><input type="text" id="oco-unidade" required></div>
@@ -522,6 +557,8 @@
             </div>
         </div>
     </div>
+    
+    <div id="print-container"></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -721,6 +758,59 @@
             return new Date(dataISO).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}); 
         }
 
+        // --- INTEGRAÇÃO WHATSAPP (DEMANDAS E OCORRÊNCIAS) ---
+        window.enviarWhatsAppDemanda = function(id) {
+            const d = demandas.find(item => String(item.id) === String(id));
+            if (!d) return;
+
+            const dataObj = new Date(d.data);
+            const dataFormatada = dataObj.toLocaleDateString('pt-BR') + ' às ' + dataObj.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+
+            let iconeAlerta = "🔧";
+            if (d.prioridade === "Alta") iconeAlerta = "🚨";
+
+            let texto = `${iconeAlerta} *ORDEM DE SERVIÇO (DEMANDA)* ${iconeAlerta}\n\n`;
+            if (d.numeroOS) texto += `*Nº O.S.:* ${d.numeroOS}\n`;
+            texto += `*Status:* ${d.status}\n`;
+            texto += `*Prioridade:* ${d.prioridade}\n`;
+            texto += `*Serviço:* ${d.titulo}\n`;
+            texto += `*Unidade/Setor:* ${d.setor}\n`;
+            texto += `*Data/Hora:* ${dataFormatada}\n`;
+            texto += `*Solicitante:* ${d.solicitante}\n\n`;
+            if (d.execucao) texto += `*Execução:*\n${d.execucao}\n\n`;
+            if (d.materiais) texto += `*Materiais:*\n${d.materiais}`;
+
+            const textoCodificado = encodeURIComponent(texto);
+            const url = `https://api.whatsapp.com/send?text=${textoCodificado}`;
+            window.open(url, '_blank');
+        }
+
+        window.enviarWhatsAppOcorrencia = function(id) {
+            const o = ocorrencias.find(item => String(item.id) === String(id));
+            if (!o) return;
+
+            const dataObj = new Date(o.data);
+            const dataFormatada = dataObj.toLocaleDateString('pt-BR') + ' às ' + dataObj.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+
+            let iconeAlerta = "⚠️";
+            if (o.gravidade === "Crítica" || o.gravidade === "Alta") iconeAlerta = "🚨";
+            else if (o.gravidade === "Baixa") iconeAlerta = "ℹ️";
+
+            let texto = `${iconeAlerta} *REGISTRO DE OCORRÊNCIA* ${iconeAlerta}\n\n`;
+            if (o.numero) texto += `*Nº do Registro:* ${o.numero}\n`;
+            texto += `*Status:* ${o.status}\n`;
+            texto += `*Gravidade:* ${o.gravidade}\n`;
+            texto += `*Categoria:* ${o.categoria}\n`;
+            texto += `*Unidade:* ${o.unidade} - ${o.local}\n`;
+            texto += `*Data/Hora:* ${dataFormatada}\n`;
+            texto += `*Responsável:* ${o.responsavel}\n\n`;
+            texto += `*Descrição:*\n${o.descricao}`;
+
+            const textoCodificado = encodeURIComponent(texto);
+            const url = `https://api.whatsapp.com/send?text=${textoCodificado}`;
+            window.open(url, '_blank');
+        }
+
         // --- 1. DEMANDAS ---
         const formDemanda = document.getElementById('form-demanda');
         formDemanda.addEventListener('submit', (e) => {
@@ -739,7 +829,7 @@
                 execucao: document.getElementById('demanda-execucao').value.toUpperCase(),
                 materiais: document.getElementById('demanda-materiais').value.toUpperCase(),
                 status: idEdicao ? document.getElementById('demanda-status-edit').value : 'Pendente',
-                dataFim: null 
+                dataFim: null
             };
             
             if(idEdicao) {
@@ -773,12 +863,13 @@
             document.getElementById('demanda-data').value = d.data;
             document.getElementById('demanda-execucao').value = d.execucao || ''; 
             document.getElementById('demanda-materiais').value = d.materiais || ''; 
+
             document.getElementById('titulo-form-demanda').innerHTML = '<i class="fas fa-edit"></i> Editando Demanda';
             document.getElementById('btn-submit-demanda').innerText = "Salvar Alterações"; 
             document.getElementById('btn-cancel-demanda').style.display = "block";
             const divStatus = document.getElementById('div-status-demanda'); if(divStatus) divStatus.style.display = "block";
             const selectStatus = document.getElementById('demanda-status-edit'); if(selectStatus) selectStatus.value = d.status;
-            document.getElementById('demandas').scrollIntoView({behavior: 'smooth'});
+            document.getElementById('demandas').scrollIntoView({behavior: 'smooth'}); 
         }
 
         window.cancelarEdicaoDemanda = function() {
@@ -816,7 +907,7 @@
                 const btnAvancar = d.status !== 'Concluído' ? `<button onclick="avancarStatus('${d.id}')" class="action-btn btn-check" title="Avançar"><i class="fas fa-arrow-right"></i></button>` : '';
                 const dataFormatada = new Date(d.data).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
                 
-                tr.innerHTML = `<td>${dataFormatada}</td><td><span class="badge" style="background:#94a3b8">${d.prioridade}</span></td><td><strong>${d.titulo}</strong><br><small style="color:var(--text-secondary)">${d.solicitante} - ${d.setor}</small></td><td><span class="badge ${badgeClass}">${d.status}</span></td><td>${tempoDisplay}</td><td style="min-width:160px">${btnAvancar}<button onclick="imprimirOS('${d.id}')" class="action-btn btn-print" title="Imprimir O.S."><i class="fas fa-print"></i></button><button onclick="editarDemanda('${d.id}')" class="action-btn btn-edit"><i class="fas fa-pen"></i></button><button onclick="deletarDemanda('${d.id}')" class="action-btn btn-delete"><i class="fas fa-trash"></i></button></td>`;
+                tr.innerHTML = `<td>${dataFormatada}</td><td><span class="badge" style="background:#94a3b8">${d.prioridade}</span></td><td><strong>${d.titulo}</strong><br><small style="color:var(--text-secondary)">${d.solicitante} - ${d.setor}</small></td><td><span class="badge ${badgeClass}">${d.status}</span></td><td>${tempoDisplay}</td><td style="min-width:180px">${btnAvancar}<button onclick="enviarWhatsAppDemanda('${d.id}')" class="action-btn btn-whatsapp" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button><button onclick="imprimirOS('${d.id}')" class="action-btn btn-print" title="Imprimir O.S."><i class="fas fa-print"></i></button><button onclick="editarDemanda('${d.id}')" class="action-btn btn-edit"><i class="fas fa-pen"></i></button><button onclick="deletarDemanda('${d.id}')" class="action-btn btn-delete"><i class="fas fa-trash"></i></button></td>`;
                 tbody.appendChild(tr);
             });
         }
@@ -851,13 +942,30 @@
         }
 
         // --- 2. VISITANTES --- 
+        const videoElement = document.getElementById('webcam-video');
+        const webcamContainer = document.getElementById('webcam-container');
+        const btnsFotoWrapper = document.getElementById('btns-foto-originais');
+        const imgPreview = document.getElementById('vis-preview');
+        let stream = null;
+
+        document.getElementById('btn-open-webcam').addEventListener('click', async () => {
+            try { stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } }); videoElement.srcObject = stream; webcamContainer.style.display = 'flex'; btnsFotoWrapper.style.display = 'none'; imgPreview.style.display = 'none'; } catch (err) { alert("Erro de Webcam"); }
+        });
+        function fecharWebcam() { if (stream) { stream.getTracks().forEach(track => track.stop()); stream = null; } webcamContainer.style.display = 'none'; btnsFotoWrapper.style.display = 'flex'; imgPreview.style.display = 'block'; }
+        document.getElementById('btn-close-cam').addEventListener('click', fecharWebcam);
+        document.getElementById('btn-snap').addEventListener('click', () => { if (!stream) return; const canvas = document.createElement('canvas'); const maxWidth = 500; const scale = maxWidth / videoElement.videoWidth; const newWidth = (videoElement.videoWidth > maxWidth) ? maxWidth : videoElement.videoWidth; const newHeight = (videoElement.videoWidth > maxWidth) ? videoElement.videoHeight * scale : videoElement.videoHeight; canvas.width = newWidth; canvas.height = newHeight; const ctx = canvas.getContext('2d'); ctx.translate(newWidth, 0); ctx.scale(-1, 1); ctx.drawImage(videoElement, 0, 0, newWidth, newHeight); const base64String = canvas.toDataURL('image/jpeg', 0.7); document.getElementById('vis-foto-base64').value = base64String; document.getElementById('vis-preview').src = base64String; fecharWebcam(); });
+        const fileInput = document.getElementById('vis-foto-input');
+        fileInput.addEventListener('change', function(event) { const file = event.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = function(e) { const img = new Image(); img.onload = function() { const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d'); const maxWidth = 500; const scale = maxWidth / img.width; const newWidth = (img.width > maxWidth) ? maxWidth : img.width; const newHeight = (img.width > maxWidth) ? img.height * scale : img.height; canvas.width = newWidth; canvas.height = newHeight; ctx.drawImage(img, 0, 0, newWidth, newHeight); const base64String = canvas.toDataURL('image/jpeg', 0.7); document.getElementById('vis-foto-base64').value = base64String; document.getElementById('vis-preview').src = base64String; }; img.src = e.target.result; }; reader.readAsDataURL(file); } });
+
         const formVis = document.getElementById('form-visitante');
         formVis.addEventListener('submit', (e) => {
             e.preventDefault();
             const idEdicao = document.getElementById('visitante-id-edit').value;
             const id = idEdicao || Date.now();
+            const fotoBase64 = document.getElementById('vis-foto-base64').value;
             const novoVisitante = {
                 id: id,
+                foto: fotoBase64 || null, 
                 nome: document.getElementById('vis-nome').value.toUpperCase(),
                 empresa: document.getElementById('vis-empresa').value.toUpperCase(),
                 responsavel: document.getElementById('vis-responsavel').value.toUpperCase(),
@@ -868,6 +976,7 @@
             };
             if(idEdicao) {
                 const ant = visitantes.find(v => String(v.id) === String(id));
+                if (!novoVisitante.foto && ant && ant.foto) { novoVisitante.foto = ant.foto; }
                 if (novoVisitante.status === 'Ativo') {
                     novoVisitante.saida = null;
                 } else {
@@ -893,12 +1002,16 @@
             document.getElementById('vis-responsavel').value = v.responsavel; 
             document.getElementById('vis-finalidade').value = v.finalidade; 
             document.getElementById('vis-entrada').value = v.entrada;
+            
+            const preview = document.getElementById('vis-preview'); const defaultIcon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Cpath fill='%23d1d5db' d='M50 50c-13.8 0-25-11.2-25-25s11.2-25 25-25 25 11.2 25 25-11.2 25-25 25zm0 10c16.7 0 50 8.3 50 25v15H0v-15c0-16.7 33.3-25 50-25z'/%3E%3C/svg%3E";
+            if (v.foto) { preview.src = v.foto; document.getElementById('vis-foto-base64').value = v.foto; } else { preview.src = defaultIcon; document.getElementById('vis-foto-base64').value = ""; }
+
             document.getElementById('titulo-form-visitante').innerHTML = '<i class="fas fa-edit"></i> Editando Visitante'; 
             document.getElementById('btn-submit-vis').innerText = "Salvar Alterações"; 
             document.getElementById('btn-cancel-vis').style.display = "block";
             const divStatus = document.getElementById('div-status-vis'); if(divStatus) divStatus.style.display="block";
             const selStat = document.getElementById('vis-status-edit'); if(selStat) selStat.value = v.status;
-            document.getElementById('visitantes').scrollIntoView({behavior:'smooth'});
+            document.getElementById('visitantes').scrollIntoView({behavior:'smooth'}); fecharWebcam();
         }
         
         window.deletarVisitante = function(id) { 
@@ -916,6 +1029,8 @@
             document.getElementById('btn-submit-vis').innerText = "Registrar Entrada"; 
             document.getElementById('btn-cancel-vis').style.display = "none"; 
             document.getElementById('div-status-vis').style.display="none"; 
+            document.getElementById('vis-preview').src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Cpath fill='%23d1d5db' d='M50 50c-13.8 0-25-11.2-25-25s11.2-25 25-25 25 11.2 25 25-11.2 25-25 25zm0 10c16.7 0 50 8.3 50 25v15H0v-15c0-16.7 33.3-25 50-25z'/%3E%3C/svg%3E"; 
+            document.getElementById('vis-foto-base64').value = ""; fecharWebcam();
         }
 
         window.renderizarApenasVisitantes = function() {
@@ -929,6 +1044,7 @@
             document.getElementById('dash-visitantes-ativos').innerText = lista.filter(v => v.status === 'Ativo').length; 
             document.getElementById('dash-visitantes-total').innerText = lista.length;
             const tbody = document.querySelector('#tabela-visitantes tbody'); tbody.innerHTML = '';
+            const defaultIcon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Cpath fill='%23d1d5db' d='M50 50c-13.8 0-25-11.2-25-25s11.2-25 25-25 25 11.2 25 25-11.2 25-25 25zm0 10c16.7 0 50 8.3 50 25v15H0v-15c0-16.7 33.3-25 50-25z'/%3E%3C/svg%3E";
             lista.forEach(v => {
                 const tr = document.createElement('tr');
                 const badge = v.status === 'Ativo' ? '<span class="badge bg-visitante-ativo">NA EMPRESA</span>' : '<span class="badge bg-saiu">SAIU</span>';
@@ -936,7 +1052,8 @@
                 const dataSai = v.saida ? new Date(v.saida).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '-';
                 const btnBaixa = v.status === 'Ativo' ? `<button onclick="baixaVisitante('${v.id}')" class="action-btn btn-baixa" title="Registrar Saída"><i class="fas fa-sign-out-alt"></i></button>` : '<i class="fas fa-check" style="color:var(--success); margin-right:5px"></i>';
                 let btnExcluir = ''; if (currentUserRole === 'admin') btnExcluir = `<button onclick="deletarVisitante('${v.id}')" class="action-btn btn-delete" title="Excluir"><i class="fas fa-trash"></i></button>`;
-                tr.innerHTML = `<td>${badge}</td><td><strong>${v.nome}</strong></td><td>${v.empresa || '-'}</td><td>${v.responsavel}<br><small style="color:var(--text-secondary)">${v.finalidade}</small></td><td>Ent: ${dataEnt}<br>Sai: ${dataSai}</td><td style="min-width:140px">${btnBaixa}<button onclick="editarVisitante('${v.id}')" class="action-btn btn-edit"><i class="fas fa-pen"></i></button>${btnExcluir}</td>`;
+                const imgTag = `<img src="${v.foto || defaultIcon}" class="avatar-table">`;
+                tr.innerHTML = `<td>${badge}</td><td>${imgTag}<strong>${v.nome}</strong></td><td>${v.empresa || '-'}</td><td>${v.responsavel}<br><small style="color:var(--text-secondary)">${v.finalidade}</small></td><td>Ent: ${dataEnt}<br>Sai: ${dataSai}</td><td style="min-width:140px">${btnBaixa}<button onclick="editarVisitante('${v.id}')" class="action-btn btn-edit"><i class="fas fa-pen"></i></button>${btnExcluir}</td>`;
                 tbody.appendChild(tr);
             });
         }
@@ -1135,7 +1252,7 @@
                 responsavel: document.getElementById('oco-responsavel').value.toUpperCase(), 
                 descricao: document.getElementById('oco-descricao').value.trim().toUpperCase(), 
                 status: statusNovo, 
-                dataEncerramento: null 
+                dataEncerramento: null
             };
             if(idEdicao) {
                 const ant = ocorrencias.find(o => String(o.id) === String(id));
@@ -1163,7 +1280,7 @@
             document.getElementById('oco-data').value = o.data; 
             document.getElementById('oco-responsavel').value = o.responsavel; 
             document.getElementById('oco-descricao').value = o.descricao;
-            
+
             document.getElementById('titulo-form-ocorrencia').innerHTML = '<i class="fas fa-edit"></i> Editando Ocorrência'; 
             document.getElementById('btn-submit-oco').innerText = "Salvar Alterações"; 
             document.getElementById('btn-cancel-oco').style.display = "block"; 
@@ -1207,12 +1324,38 @@
                 
                 const textoTitulo = o.numero ? `<strong>#${o.numero} - ${o.categoria}</strong>` : `<strong>${o.categoria}</strong>`;
 
-                tr.innerHTML = `<td>${formatarDataHora(o.data)}</td><td>${badgeGrav}</td><td>${textoTitulo}<br><small>${o.unidade} - ${o.local}</small></td><td>${o.descricao.substring(0,50)}...<br><small style="color:var(--text-secondary)">Resp: ${o.responsavel}</small></td><td>${badgeStat}</td><td>${tempo}</td><td style="min-width:140px"><button onclick="imprimirRO('${o.id}')" class="action-btn btn-print" title="Imprimir R.O."><i class="fas fa-print"></i></button><button onclick="editarOcorrencia('${o.id}')" class="action-btn btn-edit"><i class="fas fa-pen"></i></button>${btnExcluir}</td>`;
+                tr.innerHTML = `<td>${formatarDataHora(o.data)}</td><td>${badgeGrav}</td><td>${textoTitulo}<br><small>${o.unidade} - ${o.local}</small></td><td>${o.descricao.substring(0,50)}...<br><small style="color:var(--text-secondary)">Resp: ${o.responsavel}</small></td><td>${badgeStat}</td><td>${tempo}</td><td style="min-width:180px"><button onclick="enviarWhatsAppOcorrencia('${o.id}')" class="action-btn btn-whatsapp" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button><button onclick="imprimirRO('${o.id}')" class="action-btn btn-print" title="Imprimir R.O."><i class="fas fa-print"></i></button><button onclick="editarOcorrencia('${o.id}')" class="action-btn btn-edit"><i class="fas fa-pen"></i></button>${btnExcluir}</td>`;
                 tbody.appendChild(tr);
             });
         }
 
-        // --- FUNÇÃO DE IMPRESSÃO R.O (OCORRÊNCIAS) ---
+        // --- FUNÇÕES DE IMPRESSÃO RESPONSIVAS (MÓVEL E DESKTOP) ---
+        
+        function acionarImpressaoNativa(htmlContent) {
+            let printContainer = document.getElementById('print-container');
+            if (!printContainer) {
+                printContainer = document.createElement('div');
+                printContainer.id = 'print-container';
+                document.body.appendChild(printContainer);
+            }
+            
+            printContainer.innerHTML = `
+                <style>
+                    @media print {
+                        body { display: block !important; height: auto !important; overflow: visible !important; background: white !important; }
+                        #app-content, #login-overlay, .mobile-overlay { display: none !important; }
+                        #print-container { display: block !important; }
+                    }
+                </style>
+                ${htmlContent}
+            `;
+            
+            setTimeout(() => {
+                window.print();
+                setTimeout(() => { printContainer.innerHTML = ''; }, 1000);
+            }, 500);
+        }
+
         window.imprimirRO = function(id) {
             const o = ocorrencias.find(item => String(item.id) === String(id));
             if (!o) return;
@@ -1221,7 +1364,6 @@
             const dataStr = dataObj.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric'});
             const horaStr = dataObj.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
             
-            // Corrige o recuo, garante texto limpo e converte quebras de linha para HTML
             const textoHistorico = o.descricao ? o.descricao.trim().replace(/\n/g, '<br>') : '';
             
             let baseUrl = window.location.href;
@@ -1229,109 +1371,93 @@
             if (!baseUrl.endsWith('/')) baseUrl += '/';
             const logoSrc = baseUrl + 'brasaosp.jpg';
 
-            const janelaImpressao = window.open('', '_blank');
-            janelaImpressao.document.write(`
-                <!DOCTYPE html>
-                <html lang="pt-BR">
-                <head>
-                    <meta charset="UTF-8">
-                    <title>R.O - Registro de Ocorrência</title>
-                    <style>
-                        @page { size: A4 portrait; margin: 15mm; }
-                        body { font-family: 'Arial', sans-serif; font-size: 12px; color: #000; margin: 0; padding: 0; line-height: 1.4; position: relative; }
-                        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-                        th, td { border: 1px solid #000; padding: 6px; text-align: left; vertical-align: middle; }
-                        .header-table { border: none; margin-bottom: 10px; }
-                        .header-table td { border: none; padding: 0; }
-                        .text-center { text-align: center; }
-                        .bold { font-weight: bold; }
-                        .section-title { font-weight: bold; font-size: 13px; margin: 15px 0 5px 0; }
-                        .history-box { width: 100%; min-height: 450px; border: 1px solid #000; padding: 10px 15px; box-sizing: border-box; background: repeating-linear-gradient(transparent, transparent 24px, #999 24px, #999 25px); line-height: 25px; margin-top: 5px; text-align: justify; }
-                    </style>
-                </head>
-                <body>
-                    <table class="header-table">
-                        <tr>
-                            <td width="20%" class="text-center">
-                                <img src="${logoSrc}" style="width: 70px; height: auto;" alt="Logo SP">
-                            </td>
-                            <td width="80%" class="text-center" style="padding-right: 20px;">
-                                <div style="font-size: 16px; font-weight: bold;">GOVERNO DO ESTADO DE SÃO PAULO</div>
-                                <div style="font-size: 14px; margin-top: 3px;">COORDENADORIA GERAL DE SUPORTE ADMINISTRATIVO</div>
-                                <div style="font-size: 14px;">Divisão de Zeladoria (DZEL)</div>
-                                <div style="font-size: 14px; font-weight: bold; margin-top: 10px;">REGISTRO DE OCORRÊNCIA</div>
-                            </td>
-                        </tr>
-                    </table>
+            const htmlContent = `
+                <style>
+                    @page { size: A4 portrait; margin: 15mm; }
+                    #print-container { font-family: 'Arial', sans-serif; font-size: 12px; color: #000; line-height: 1.4; background: white; }
+                    #print-container table { width: 100%; border-collapse: collapse; margin-bottom: 15px; background: white; }
+                    #print-container th, #print-container td { border: 1px solid #000; padding: 6px; text-align: left; vertical-align: middle; }
+                    #print-container .header-table { border: none; margin-bottom: 10px; }
+                    #print-container .header-table td { border: none; padding: 0; }
+                    #print-container .text-center { text-align: center; }
+                    #print-container .bold { font-weight: bold; }
+                    #print-container .section-title { font-weight: bold; font-size: 13px; margin: 15px 0 5px 0; }
+                    #print-container .history-box { width: 100%; min-height: 450px; border: 1px solid #000; padding: 10px 15px; box-sizing: border-box; background: repeating-linear-gradient(transparent, transparent 24px, #999 24px, #999 25px); line-height: 25px; margin-top: 5px; text-align: justify; }
+                </style>
+                <table class="header-table">
+                    <tr>
+                        <td width="20%" class="text-center">
+                            <img src="${logoSrc}" style="width: 70px; height: auto;" alt="Logo SP">
+                        </td>
+                        <td width="80%" class="text-center" style="padding-right: 20px;">
+                            <div style="font-size: 16px; font-weight: bold;">GOVERNO DO ESTADO DE SÃO PAULO</div>
+                            <div style="font-size: 14px; margin-top: 3px;">COORDENADORIA GERAL DE SUPORTE ADMINISTRATIVO</div>
+                            <div style="font-size: 14px;">Divisão de Zeladoria (DZEL)</div>
+                            <div style="font-size: 14px; font-weight: bold; margin-top: 10px;">REGISTRO DE OCORRÊNCIA</div>
+                        </td>
+                    </tr>
+                </table>
 
-                    <div class="section-title">1 – Dados do Registro:</div>
-                    <table>
-                        <tr>
-                            <td width="20%">Nº do Registro:</td><td width="40%" class="bold">${o.numero || '-'}</td>
-                            <td width="15%">Status:</td><td width="25%" class="bold">${(o.status || '').toUpperCase()}</td>
-                        </tr>
-                        <tr>
-                            <td>Dia / Mês / Ano:</td><td class="bold">${dataStr}</td>
-                            <td>Horário:</td><td class="bold">${horaStr}</td>
-                        </tr>
-                        <tr>
-                            <td>Nome do autor:</td><td class="bold">${(o.responsavel || '').toUpperCase()}</td>
-                            <td>Contratada:</td><td class="bold">${(o.contratada || '-').toUpperCase()}</td>
-                        </tr>
-                        <tr>
-                            <td>Unidade:</td><td class="bold">${(o.unidade || '').toUpperCase()}</td>
-                            <td>Setor/Local:</td><td class="bold">${(o.local || '').toUpperCase()}</td>
-                        </tr>
-                    </table>
+                <div class="section-title">1 – Dados do Registro:</div>
+                <table>
+                    <tr>
+                        <td width="20%">Nº do Registro:</td><td width="40%" class="bold">${o.numero || '-'}</td>
+                        <td width="15%">Status:</td><td width="25%" class="bold">${(o.status || '').toUpperCase()}</td>
+                    </tr>
+                    <tr>
+                        <td>Dia / Mês / Ano:</td><td class="bold">${dataStr}</td>
+                        <td>Horário:</td><td class="bold">${horaStr}</td>
+                    </tr>
+                    <tr>
+                        <td>Nome do autor:</td><td class="bold">${(o.responsavel || '').toUpperCase()}</td>
+                        <td>Contratada:</td><td class="bold">${(o.contratada || '-').toUpperCase()}</td>
+                    </tr>
+                    <tr>
+                        <td>Unidade:</td><td class="bold">${(o.unidade || '').toUpperCase()}</td>
+                        <td>Setor/Local:</td><td class="bold">${(o.local || '').toUpperCase()}</td>
+                    </tr>
+                </table>
 
-                    <div class="section-title">2 - Dados da Ocorrência:</div>
-                    <table>
-                        <tr>
-                            <td width="20%">Dia / Mês / Ano:</td><td width="40%" class="bold">${dataStr}</td>
-                            <td width="15%">Horário:</td><td width="25%" class="bold">${horaStr}</td>
-                        </tr>
-                        <tr>
-                            <td>Posto de serviço:</td><td class="bold">${(o.unidade || '').toUpperCase()} - ${(o.local || '').toUpperCase()}</td>
-                            <td>Cidade:</td><td class="bold">SÃO PAULO</td>
-                        </tr>
-                        <tr>
-                            <td>Tipo de ocorrência:</td><td class="bold">${(o.categoria || '').toUpperCase()}</td>
-                            <td>Gravidade:</td><td class="bold">${(o.gravidade || '').toUpperCase()}</td>
-                        </tr>
-                        <tr>
-                            <td>Título da ocorrência:</td><td colspan="3" class="bold">OCORRÊNCIA DE ${(o.categoria || '').toUpperCase()} - ${(o.unidade || '').toUpperCase()}</td>
-                        </tr>
-                    </table>
+                <div class="section-title">2 - Dados da Ocorrência:</div>
+                <table>
+                    <tr>
+                        <td width="20%">Dia / Mês / Ano:</td><td width="40%" class="bold">${dataStr}</td>
+                        <td width="15%">Horário:</td><td width="25%" class="bold">${horaStr}</td>
+                    </tr>
+                    <tr>
+                        <td>Posto de serviço:</td><td class="bold">${(o.unidade || '').toUpperCase()} - ${(o.local || '').toUpperCase()}</td>
+                        <td>Cidade:</td><td class="bold">SÃO PAULO</td>
+                    </tr>
+                    <tr>
+                        <td>Tipo de ocorrência:</td><td class="bold">${(o.categoria || '').toUpperCase()}</td>
+                        <td>Gravidade:</td><td class="bold">${(o.gravidade || '').toUpperCase()}</td>
+                    </tr>
+                    <tr>
+                        <td>Título da ocorrência:</td><td colspan="3" class="bold">OCORRÊNCIA DE ${(o.categoria || '').toUpperCase()} - ${(o.unidade || '').toUpperCase()}</td>
+                    </tr>
+                </table>
 
-                    <div class="section-title">3 – Histórico:</div>
-                    <div class="history-box">${textoHistorico}</div>
+                <div class="section-title">3 – Histórico:</div>
+                <div class="history-box"><span style="background-color: white;">${textoHistorico}</span></div>
 
-                    <table style="margin-top: 15px;">
-                        <tr>
-                            <td width="15%">Assinatura:</td><td width="55%"></td>
-                            <td width="10%">Matrícula:</td><td width="20%"></td>
-                        </tr>
-                    </table>
-                    
-                    <table>
-                        <tr>
-                            <td width="15%" class="bold">OBSERVAÇÃO</td>
-                            <td width="85%" style="height: 35px;"></td>
-                        </tr>
-                    </table>
-                    
-                    <script>
-                        window.onload = function() { setTimeout(function() { window.print(); }, 800); };
-                        window.onafterprint = function() { window.close(); };
-                    <\/script>
-                </body>
-                </html>
-            `);
-            janelaImpressao.document.close();
-            janelaImpressao.focus();
+                <table style="margin-top: 15px;">
+                    <tr>
+                        <td width="15%">Assinatura:</td><td width="55%"></td>
+                        <td width="10%">Matrícula:</td><td width="20%"></td>
+                    </tr>
+                </table>
+                
+                <table>
+                    <tr>
+                        <td width="15%" class="bold">OBSERVAÇÃO</td>
+                        <td width="85%" style="height: 35px;"></td>
+                    </tr>
+                </table>
+            `;
+
+            acionarImpressaoNativa(htmlContent);
         }
 
-        // --- FUNÇÃO DE IMPRESSÃO O.S. (DEMANDAS) ---
         window.imprimirOS = function(id) {
             const d = demandas.find(item => String(item.id) === String(id));
             if (!d) return;
@@ -1343,183 +1469,155 @@
             const textoMateriais = d.materiais ? d.materiais.replace(/\n/g, '<br>') : '';
             
             let baseUrl = window.location.href;
-            if (baseUrl.includes('index.html')) {
-                baseUrl = baseUrl.replace('index.html', '');
-            }
-            if (!baseUrl.endsWith('/')) {
-                baseUrl += '/';
-            }
+            if (baseUrl.includes('index.html')) { baseUrl = baseUrl.replace('index.html', ''); }
+            if (!baseUrl.endsWith('/')) { baseUrl += '/'; }
             const logoSrc = baseUrl + 'brasaosp.jpg';
-            
-            const janelaImpressao = window.open('', '_blank');
-            
-            janelaImpressao.document.write(`
-                <!DOCTYPE html>
-                <html lang="pt-BR">
-                <head>
-                    <meta charset="UTF-8">
-                    <title>Ordem de Serviço Nº ${numeroOS}</title>
-                    <style>
-                        @page { size: A4 portrait; margin: 12mm; }
-                        body { font-family: 'Arial', sans-serif; font-size: 11px; color: #000; margin: 0; padding: 0; line-height: 1.3; }
-                        .os-container { width: 100%; border: 2px solid #000; padding: 2px; box-sizing: border-box; }
-                        table { width: 100%; border-collapse: collapse; margin-bottom: 0; }
-                        th, td { border: 1px solid #000; padding: 5px 6px; text-align: left; vertical-align: top; }
-                        .bg-gray { background-color: #e5e7eb; font-weight: bold; text-transform: uppercase; font-size: 10px; color: #333; }
-                        .text-center { text-align: center; }
-                        .header-title { font-size: 14px; font-weight: bold; text-transform: uppercase; margin: 4px 0; }
-                        .header-subtitle { font-size: 11px; font-weight: bold; }
-                        .value-text { font-size: 12px; margin-top: 3px; display: block; text-transform: uppercase; color: #000; font-weight: normal; }
-                        .section-title { background-color: #d1d5db; font-weight: bold; text-align: center; font-size: 11px; padding: 4px; text-transform: uppercase; border: 1px solid #000; border-bottom: none; border-top: 2px solid #000; }
-                        .signatures { display: flex; width: 100%; }
-                        .signature-box { flex: 1; text-align: center; padding: 30px 5px 5px 5px; border: 1px solid #000; border-top: none; }
-                        .signature-line { border-top: 1px solid #000; width: 80%; margin: 30px auto 4px auto; }
-                        .checkbox-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 4px; font-size: 11px; text-transform: uppercase; }
-                        .checkbox-grid-3 { grid-template-columns: repeat(3, 1fr); }
-                        .checkbox-item { display: flex; align-items: center; gap: 4px; }
-                        .box { display: inline-block; width: 10px; height: 10px; border: 1px solid #000; }
-                        .footer-note { font-size: 9px; text-align: center; margin-top: 8px; font-style: italic; color: #555; }
-                    </style>
-                </head>
-                <body>
-                    <div class="os-container">
-                        <table>
-                            <tr>
-                                <td width="15%" class="text-center" style="vertical-align: middle;">
-                                    <img src="${logoSrc}" style="width: 65px; height: auto;" alt="Governo SP">
-                                </td>
-                                <td width="70%" class="text-center" style="vertical-align: middle;">
-                                    <div class="header-title">GOVERNO DO ESTADO DE SÃO PAULO</div>
-                                    <div class="header-subtitle">SECRETARIA DA EDUCAÇÃO</div>
-                                    <div class="header-subtitle">COORDENADORIA GERAL DE SUPORTE ADMINISTRATIVO - DIVISÃO DE ZELADORIA</div>
-                                </td>
-                                <td width="15%" class="text-center" style="vertical-align: middle; background-color: #e5e7eb;">
-                                    <span style="font-size: 10px; font-weight: bold;">ORDEM DE SERVIÇO</span><br>
-                                    <span style="font-size: 18px; font-weight: bold; color: #dc2626;">Nº ${numeroOS}</span>
-                                </td>
-                            </tr>
-                        </table>
 
-                        <div class="section-title">1. IDENTIFICAÇÃO DA SOLICITAÇÃO</div>
-                        <table>
-                            <tr>
-                                <td width="30%" class="bg-gray">DATA E HORA DE ABERTURA<span class="value-text">${dataAbertura}</span></td>
-                                <td width="40%" class="bg-gray">SOLICITANTE / CONTATO<span class="value-text">${d.solicitante}</span></td>
-                                <td width="30%" class="bg-gray">PRIORIDADE NO SISTEMA<span class="value-text">${d.prioridade}</span></td>
-                            </tr>
-                            <tr>
-                                <td colspan="2" class="bg-gray">UNIDADE / SETOR DE ORIGEM<span class="value-text">${d.setor}</span></td>
-                                <td class="bg-gray">STATUS ATUAL<span class="value-text">${d.status}</span></td>
-                            </tr>
-                        </table>
+            const htmlContent = `
+                <style>
+                    @page { size: A4 portrait; margin: 12mm; }
+                    #print-container { font-family: 'Arial', sans-serif; font-size: 11px; color: #000; line-height: 1.3; background: white; }
+                    #print-container .os-container { width: 100%; border: 2px solid #000; padding: 2px; box-sizing: border-box; }
+                    #print-container table { width: 100%; border-collapse: collapse; margin-bottom: 0; background: white; }
+                    #print-container th, #print-container td { border: 1px solid #000; padding: 5px 6px; text-align: left; vertical-align: top; }
+                    #print-container .bg-gray { background-color: #e5e7eb !important; font-weight: bold; text-transform: uppercase; font-size: 10px; color: #333; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    #print-container .text-center { text-align: center; }
+                    #print-container .header-title { font-size: 14px; font-weight: bold; text-transform: uppercase; margin: 4px 0; }
+                    #print-container .header-subtitle { font-size: 11px; font-weight: bold; }
+                    #print-container .value-text { font-size: 12px; margin-top: 3px; display: block; text-transform: uppercase; color: #000; font-weight: normal; }
+                    #print-container .section-title { background-color: #d1d5db !important; font-weight: bold; text-align: center; font-size: 11px; padding: 4px; text-transform: uppercase; border: 1px solid #000; border-bottom: none; border-top: 2px solid #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    #print-container .signatures { display: flex; width: 100%; }
+                    #print-container .signature-box { flex: 1; text-align: center; padding: 30px 5px 5px 5px; border: 1px solid #000; border-top: none; }
+                    #print-container .signature-line { border-top: 1px solid #000; width: 80%; margin: 30px auto 4px auto; }
+                    #print-container .checkbox-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 4px; font-size: 11px; text-transform: uppercase; }
+                    #print-container .checkbox-grid-3 { grid-template-columns: repeat(3, 1fr); }
+                    #print-container .checkbox-item { display: flex; align-items: center; gap: 4px; }
+                    #print-container .box { display: inline-block; width: 10px; height: 10px; border: 1px solid #000; }
+                    #print-container .footer-note { font-size: 9px; text-align: center; margin-top: 8px; font-style: italic; color: #555; }
+                </style>
+                <div class="os-container">
+                    <table>
+                        <tr>
+                            <td width="15%" class="text-center" style="vertical-align: middle;">
+                                <img src="${logoSrc}" style="width: 65px; height: auto;" alt="Governo SP">
+                            </td>
+                            <td width="70%" class="text-center" style="vertical-align: middle;">
+                                <div class="header-title">GOVERNO DO ESTADO DE SÃO PAULO</div>
+                                <div class="header-subtitle">SECRETARIA DA EDUCAÇÃO</div>
+                                <div class="header-subtitle">COORDENADORIA GERAL DE SUPORTE ADMINISTRATIVO - DIVISÃO DE ZELADORIA</div>
+                            </td>
+                            <td width="15%" class="text-center" style="vertical-align: middle; background-color: #e5e7eb;">
+                                <span style="font-size: 10px; font-weight: bold;">ORDEM DE SERVIÇO</span><br>
+                                <span style="font-size: 18px; font-weight: bold; color: #dc2626;">Nº ${numeroOS}</span>
+                            </td>
+                        </tr>
+                    </table>
 
-                        <div class="section-title">2. DESCRIÇÃO DA DEMANDA (PREENCHIMENTO PELO SISTEMA)</div>
-                        <table>
-                            <tr>
-                                <td style="height: 50px; vertical-align: middle;">
-                                    <span style="font-size: 13px; text-transform: uppercase; font-weight: bold;">${d.titulo}</span>
-                                </td>
-                            </tr>
-                        </table>
+                    <div class="section-title">1. IDENTIFICAÇÃO DA SOLICITAÇÃO</div>
+                    <table>
+                        <tr>
+                            <td width="30%" class="bg-gray">DATA E HORA DE ABERTURA<span class="value-text">${dataAbertura}</span></td>
+                            <td width="40%" class="bg-gray">SOLICITANTE / CONTATO<span class="value-text">${d.solicitante}</span></td>
+                            <td width="30%" class="bg-gray">PRIORIDADE NO SISTEMA<span class="value-text">${d.prioridade}</span></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="bg-gray">UNIDADE / SETOR DE ORIGEM<span class="value-text">${d.setor}</span></td>
+                            <td class="bg-gray">STATUS ATUAL<span class="value-text">${d.status}</span></td>
+                        </tr>
+                    </table>
 
-                        <div class="section-title">3. PARECER TÉCNICO E EXECUÇÃO (PREENCHIMENTO PELA EQUIPE)</div>
-                        <table>
-                            <tr>
-                                <td colspan="2" class="bg-gray">EQUIPE RESPONSÁVEL / CONTRATADA ATRIBUÍDA</td>
-                            </tr>
-                            <tr>
-                                <td colspan="2">
-                                    <div class="checkbox-grid checkbox-grid-3">
-                                        <div class="checkbox-item"><div class="box"></div> LIMPEZA PREDIAL</div>
-                                        <div class="checkbox-item"><div class="box"></div> AR CONDICIONADO</div>
-                                        <div class="checkbox-item"><div class="box"></div> MANUTENÇÃO PREDIAL</div>
-                                        <div class="checkbox-item"><div class="box"></div> MANUTENÇÃO DE ELEVADORES</div>
-                                        <div class="checkbox-item"><div class="box"></div> SUPORTE TI</div>
-                                        <div class="checkbox-item"><div class="box"></div> TELEFONIA</div> 
-                                        <div class="checkbox-item"><div class="box"></div> MANUTENÇÃO E RECARGA DE EXTINTORES</div>
-                                        <div class="checkbox-item"><div class="box"></div> OUTROS: ___________________________</div>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td colspan="2" class="bg-gray">LOCAL DE ATUAÇÃO / PRÉDIO VINCULADO</td>
-                            </tr>
-                            <tr>
-                                <td colspan="2">
-                                    <div class="checkbox-grid">
-                                        <div class="checkbox-item"><div class="box"></div> SEDE</div>
-                                        <div class="checkbox-item"><div class="box"></div> AROUCHE</div>
-                                        <div class="checkbox-item"><div class="box"></div> EFAPE</div>
-                                        <div class="checkbox-item"><div class="box"></div> ARMÊNIA</div>
-                                        <div class="checkbox-item"><div class="box"></div> CASA VERDE</div>
-                                        <div class="checkbox-item"><div class="box"></div> SÃO DOMINGOS</div>
-                                        <div class="checkbox-item"><div class="box"></div> CAJAMAR</div>
-                                        <div class="checkbox-item"><div class="box"></div> TENENTE PENA</div>
-                                        <div class="checkbox-item"><div class="box"></div> CENTRO OESTE</div>
-                                        <div class="checkbox-item"><div class="box"></div> CAPE</div>
-                                        <div class="checkbox-item" style="grid-column: span 2;"><div class="box"></div> OUTRO: ___________________________</div>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td width="50%" class="bg-gray">DESCRIÇÃO DETALHADA DOS SERVIÇOS EXECUTADOS</td>
-                                <td width="50%" class="bg-gray">MATERIAIS E PEÇAS UTILIZADOS (REPOSIÇÃO)</td>
-                            </tr>
-                            <tr>
-                                <td style="height: 220px; font-weight: normal; font-size: 11px;">${textoExecucao}</td>
-                                <td style="height: 220px; font-weight: normal; font-size: 11px;">${textoMateriais}</td>
-                            </tr>
-                        </table>
+                    <div class="section-title">2. DESCRIÇÃO DA DEMANDA (PREENCHIMENTO PELO SISTEMA)</div>
+                    <table>
+                        <tr>
+                            <td style="height: 50px; vertical-align: middle;">
+                                <span style="font-size: 13px; text-transform: uppercase; font-weight: bold;">${d.titulo}</span>
+                            </td>
+                        </tr>
+                    </table>
 
-                        <div class="section-title">4. TERMO DE ENCERRAMENTO E ACEITE FISCAL</div>
-                        <table>
-                            <tr>
-                                <td width="25%" class="bg-gray text-center">INÍCIO DO ATENDIMENTO<br><br><span style="font-weight: normal; font-size: 12px;">____/____/20____ às ____:____</span></td>
-                                <td width="25%" class="bg-gray text-center">TÉRMINO DO ATENDIMENTO<br><br><span style="font-weight: normal; font-size: 12px;">____/____/20____ às ____:____</span></td>
-                                <td width="50%" class="bg-gray">OBSERVAÇÕES FINAIS / PENDÊNCIAS<br><br><br></td>
-                            </tr>
-                        </table>
-                        
-                        <div class="signatures">
-                            <div class="signature-box" style="border-left: 1px solid #000;">
-                                <div class="signature-line"></div>
-                                <strong>TÉCNICO EXECUTOR</strong><br>
-                                <span style="font-size: 9px; font-weight: normal; color: #444;">Nome legível / Matrícula / Empresa</span>
-                            </div>
-                            <div class="signature-box" style="border-left: 1px solid #000; border-right: 1px solid #000;">
-                                <div class="signature-line"></div>
-                                <strong>GESTOR / FISCAL (DZEL)</strong><br>
-                                <span style="font-size: 9px; font-weight: normal; color: #444;">Carimbo e Assinatura</span>
-                            </div>
-                            <div class="signature-box" style="border-right: 1px solid #000;">
-                                <div class="signature-line"></div>
-                                <strong>SOLICITANTE / RECEBEDOR</strong><br>
-                                <span style="font-size: 9px; font-weight: normal; color: #444;">Atesto a conformidade do serviço</span>
-                            </div>
+                    <div class="section-title">3. PARECER TÉCNICO E EXECUÇÃO (PREENCHIMENTO PELA EQUIPE)</div>
+                    <table>
+                        <tr>
+                            <td colspan="2" class="bg-gray">EQUIPE RESPONSÁVEL / CONTRATADA ATRIBUÍDA</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <div class="checkbox-grid checkbox-grid-3">
+                                    <div class="checkbox-item"><div class="box"></div> LIMPEZA PREDIAL</div>
+                                    <div class="checkbox-item"><div class="box"></div> AR CONDICIONADO</div>
+                                    <div class="checkbox-item"><div class="box"></div> MANUTENÇÃO PREDIAL</div>
+                                    <div class="checkbox-item"><div class="box"></div> MANUTENÇÃO DE ELEVADORES</div>
+                                    <div class="checkbox-item"><div class="box"></div> SUPORTE TI</div>
+                                    <div class="checkbox-item"><div class="box"></div> TELEFONIA</div> 
+                                    <div class="checkbox-item"><div class="box"></div> MANUTENÇÃO E RECARGA DE EXTINTORES</div>
+                                    <div class="checkbox-item"><div class="box"></div> OUTROS: ___________________________</div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="bg-gray">LOCAL DE ATUAÇÃO / PRÉDIO VINCULADO</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <div class="checkbox-grid">
+                                    <div class="checkbox-item"><div class="box"></div> SEDE</div>
+                                    <div class="checkbox-item"><div class="box"></div> AROUCHE</div>
+                                    <div class="checkbox-item"><div class="box"></div> EFAPE</div>
+                                    <div class="checkbox-item"><div class="box"></div> ARMÊNIA</div>
+                                    <div class="checkbox-item"><div class="box"></div> CASA VERDE</div>
+                                    <div class="checkbox-item"><div class="box"></div> SÃO DOMINGOS</div>
+                                    <div class="checkbox-item"><div class="box"></div> CAJAMAR</div>
+                                    <div class="checkbox-item"><div class="box"></div> TENENTE PENA</div>
+                                    <div class="checkbox-item"><div class="box"></div> CENTRO OESTE</div>
+                                    <div class="checkbox-item"><div class="box"></div> CAPE</div>
+                                    <div class="checkbox-item" style="grid-column: span 2;"><div class="box"></div> OUTRO: ___________________________</div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td width="50%" class="bg-gray">DESCRIÇÃO DETALHADA DOS SERVIÇOS EXECUTADOS</td>
+                            <td width="50%" class="bg-gray">MATERIAIS E PEÇAS UTILIZADOS (REPOSIÇÃO)</td>
+                        </tr>
+                        <tr>
+                            <td style="height: 220px; font-weight: normal; font-size: 11px;">${textoExecucao}</td>
+                            <td style="height: 220px; font-weight: normal; font-size: 11px;">${textoMateriais}</td>
+                        </tr>
+                    </table>
+
+                    <div class="section-title">4. TERMO DE ENCERRAMENTO E ACEITE FISCAL</div>
+                    <table>
+                        <tr>
+                            <td width="25%" class="bg-gray text-center">INÍCIO DO ATENDIMENTO<br><br><span style="font-weight: normal; font-size: 12px;">____/____/20____ às ____:____</span></td>
+                            <td width="25%" class="bg-gray text-center">TÉRMINO DO ATENDIMENTO<br><br><span style="font-weight: normal; font-size: 12px;">____/____/20____ às ____:____</span></td>
+                            <td width="50%" class="bg-gray">OBSERVAÇÕES FINAIS / PENDÊNCIAS<br><br><br></td>
+                        </tr>
+                    </table>
+                    
+                    <div class="signatures">
+                        <div class="signature-box" style="border-left: 1px solid #000;">
+                            <div class="signature-line"></div>
+                            <strong>TÉCNICO EXECUTOR</strong><br>
+                            <span style="font-size: 9px; font-weight: normal; color: #444;">Nome legível / Matrícula / Empresa</span>
+                        </div>
+                        <div class="signature-box" style="border-left: 1px solid #000; border-right: 1px solid #000;">
+                            <div class="signature-line"></div>
+                            <strong>GESTOR / FISCAL (DZEL)</strong><br>
+                            <span style="font-size: 9px; font-weight: normal; color: #444;">Carimbo e Assinatura</span>
+                        </div>
+                        <div class="signature-box" style="border-right: 1px solid #000;">
+                            <div class="signature-line"></div>
+                            <strong>SOLICITANTE / RECEBEDOR</strong><br>
+                            <span style="font-size: 9px; font-weight: normal; color: #444;">Atesto a conformidade do serviço</span>
                         </div>
                     </div>
-                    
-                    <div class="footer-note">
-                        Documento impresso em ${new Date().toLocaleString('pt-BR')}
-                    </div>
+                </div>
+                
+                <div class="footer-note">
+                    Documento impresso em ${new Date().toLocaleString('pt-BR')}
+                </div>
+            `;
 
-                    <script>
-                        window.onload = function() {
-                            setTimeout(function() {
-                                window.print();
-                            }, 800); 
-                        };
-                        
-                        window.onafterprint = function() {
-                            window.close();
-                        };
-                    <\/script>
-                </body>
-                </html>
-            `);
-            
-            janelaImpressao.document.close();
-            janelaImpressao.focus();
+            acionarImpressaoNativa(htmlContent);
         }
 
         /* --- EXPORTAÇÃO --- */
