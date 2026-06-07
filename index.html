@@ -5,9 +5,13 @@
     <link rel="icon" type="image/png" href="favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sistema de Gestão | Portaria e Zeladoria</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="dns-prefetch" href="https://www.gstatic.com">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- XLSX (SheetJS) e carregado sob demanda no momento da exportacao, acelerando o carregamento inicial -->
     <style>
         :root {
             /* --- Paleta de Cores Moderna --- */
@@ -208,6 +212,104 @@
         .btn-webcam { background: var(--primary); }
 
         /* Estilos de Impressão Nativa (Celular e PC) - Nível 2 */
+        /* ===================================================================== */
+        /* CAMADA DE MODERNIZACAO VISUAL (aditiva — preserva a identidade atual)  */
+        /* ===================================================================== */
+
+        /* Tokens refinados (sombras, raios e anel de foco mais suaves) */
+        :root {
+            --shadow-sm: 0 1px 2px 0 rgb(15 23 42 / 0.06);
+            --shadow-md: 0 6px 16px -4px rgb(15 23 42 / 0.10), 0 2px 6px -2px rgb(15 23 42 / 0.06);
+            --shadow-lg: 0 14px 32px -10px rgb(15 23 42 / 0.20);
+            --ring: 0 0 0 3px rgba(59, 130, 246, 0.18);
+            --radius-md: 10px;
+            --radius-lg: 14px;
+        }
+
+        /* Renderizacao tipografica mais nitida + leve profundidade no fundo */
+        body {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+            background-image: radial-gradient(1100px 520px at 100% -10%, #eef2ff 0%, transparent 55%);
+            background-attachment: fixed;
+        }
+
+        /* Hierarquia tipografica */
+        .page-title { letter-spacing: .01em; }
+        .card h2 { letter-spacing: .01em; }
+        .metric-info h3 { letter-spacing: .06em; font-weight: 600; }
+        .metric-info p { font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+
+        /* Cards / metricas com acabamento mais profissional */
+        .card { border-color: #eef2f7; }
+        .metric-card { position: relative; overflow: hidden; }
+        .metric-card::after { content:''; position:absolute; top:0; right:0; bottom:0; width:120px; background: radial-gradient(120px 120px at 100% 0, rgba(15,23,42,.025), transparent 70%); pointer-events:none; }
+
+        /* Sidebar: item ativo com leve gradiente da identidade (azul) */
+        .nav-item.active { background: linear-gradient(90deg, var(--primary), var(--accent)); }
+
+        /* Tabelas: zebra discreta + hover refinado + alinhamento */
+        .table-container { border-color: #eef2f7; }
+        thead th { letter-spacing: .04em; }
+        tbody tr { transition: background-color .15s ease; }
+        tbody tr:nth-child(even):not(.sentinel-row):not(.empty-row):not(.skeleton-row) { background: #fcfdfe; }
+        tbody tr:hover:not(.sentinel-row):not(.empty-row):not(.skeleton-row) { background: #f1f6ff; }
+        td { vertical-align: middle; }
+
+        /* Botoes: profundidade sutil + foco acessivel via teclado */
+        button.btn-primary { box-shadow: 0 1px 2px rgba(37,99,235,.25); }
+        button.btn-primary:active { transform: translateY(0); filter: brightness(.97); }
+        .action-btn { box-shadow: var(--shadow-sm); }
+        .action-btn:active { transform: scale(.95); }
+        .btn-excel:active { transform: translateY(0); }
+        :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 6px; }
+        input:hover:not(:focus), select:hover:not(:focus), textarea:hover:not(:focus) { border-color: #c0c7d1; }
+
+        /* Badges levemente mais sobrios */
+        .badge { letter-spacing: .02em; box-shadow: inset 0 0 0 1px rgba(255,255,255,.14); }
+
+        /* Skeleton loaders (feedback de carregamento) */
+        .sk-line { display:block; height:12px; border-radius:6px; background:#eef2f7; position:relative; overflow:hidden; }
+        .sk-line::after { content:''; position:absolute; inset:0; transform:translateX(-100%); background:linear-gradient(90deg, transparent, rgba(255,255,255,.75), transparent); animation: shimmer 1.2s infinite; }
+        .skeleton-row td { border-bottom:1px solid #f3f4f6; }
+        .skeleton-row:hover { background: transparent !important; }
+        @keyframes shimmer { 100% { transform: translateX(100%); } }
+
+        /* Estado vazio amigavel */
+        .empty-state { text-align:center; padding:48px 16px !important; color:var(--text-secondary); }
+        .empty-state i { display:block; font-size:2rem; margin-bottom:10px; color:#cbd5e1; }
+        .empty-state span { font-size:.9rem; }
+
+        /* Linha "carregando mais" (scroll incremental) */
+        .sentinel-row td { border:none !important; padding:14px !important; text-align:center; }
+        .loading-more { display:inline-flex; align-items:center; gap:8px; color:var(--text-secondary); font-size:.8rem; }
+
+        /* Placeholder inicial mais agradavel */
+        .loading { display:flex; align-items:center; justify-content:center; gap:10px; }
+
+        /* Scrollbars discretas */
+        .content-area, .table-container, .sidebar-nav { scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent; }
+        .content-area::-webkit-scrollbar, .table-container::-webkit-scrollbar { width:10px; height:10px; }
+        .content-area::-webkit-scrollbar-thumb, .table-container::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:8px; border:2px solid transparent; background-clip:padding-box; }
+        .content-area::-webkit-scrollbar-thumb:hover, .table-container::-webkit-scrollbar-thumb:hover { background:#94a3b8; background-clip:padding-box; }
+
+        /* Acessibilidade: respeita preferencia por menos movimento */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+        }
+
+        /* Responsividade refinada */
+        @media (max-width: 768px) {
+            .content-area { padding: 16px; }
+            td, th { padding: 10px 12px; }
+            .metric-info p { font-size: 1.5rem; }
+        }
+        @media (max-width: 480px) {
+            td, th { font-size: .82rem; }
+            .action-btn { width: 30px; height: 30px; margin-right: 3px; }
+        }
+
         #print-container { display: none; background: white; width: 100%; min-height: 100vh; }
         @media print {
             body, html { height: 100% !important; background: white !important; overflow: auto !important; }
@@ -338,7 +440,7 @@
                         <div class="card">
                             <div class="filter-container">
                                 <div class="filter-group"><label>Mês Ref:</label><input type="month" id="filtro-mes-demanda" onchange="window.renderizarApenasDemandas()"></div>
-                                <div class="filter-group"><label>Buscar:</label><input type="text" id="filtro-texto-demanda" onkeyup="window.renderizarApenasDemandas()" placeholder="Ex: Lâmpada..."></div>
+                                <div class="filter-group"><label>Buscar:</label><input type="text" id="filtro-texto-demanda" onkeyup="window.buscaDemandas()" placeholder="Ex: Lâmpada..."></div>
                                 <div class="filter-group"><label>Status:</label><select id="filtro-status-demanda" onchange="window.renderizarApenasDemandas()"><option value="">Todos</option><option value="Pendente">Pendente</option><option value="Em Andamento">Em Andamento</option><option value="Concluído">Concluído</option></select></div>
                                 <button onclick="window.exportarParaExcel('demandas')" class="btn-excel"><i class="fas fa-file-excel"></i> Exportar</button>
                             </div>
@@ -395,7 +497,7 @@
                         <div class="card">
                             <div class="filter-container">
                                 <div class="filter-group"><label>Mês:</label><input type="month" id="filtro-mes-vis" onchange="window.renderizarApenasVisitantes()"></div>
-                                <div class="filter-group"><label>Buscar:</label><input type="text" id="filtro-busca-vis" onkeyup="window.renderizarApenasVisitantes()" placeholder="Nome, Empresa..."></div>
+                                <div class="filter-group"><label>Buscar:</label><input type="text" id="filtro-busca-vis" onkeyup="window.buscaVisitantes()" placeholder="Nome, Empresa..."></div>
                                 <button onclick="window.exportarParaExcel('visitantes')" class="btn-excel"><i class="fas fa-file-excel"></i> Exportar</button>
                             </div>
                             <div class="table-container">
@@ -441,7 +543,7 @@
                         <div class="card">
                             <div class="filter-container">
                                 <div class="filter-group"><label>Mês:</label><input type="month" id="filtro-mes-frota" onchange="window.renderizarApenasFrota()"></div>
-                                <div class="filter-group"><label>Buscar:</label><input type="text" id="filtro-busca-frota" onkeyup="window.renderizarApenasFrota()" placeholder="Nome, Placa..."></div>
+                                <div class="filter-group"><label>Buscar:</label><input type="text" id="filtro-busca-frota" onkeyup="window.buscaFrota()" placeholder="Nome, Placa..."></div>
                                 <button onclick="window.exportarParaExcel('veiculos')" class="btn-excel"><i class="fas fa-file-excel"></i> Exportar</button>
                             </div>
                             <div class="table-container">
@@ -492,7 +594,7 @@
                         <div class="card">
                             <div class="filter-container">
                                 <div class="filter-group"><label>Mês:</label><input type="month" id="filtro-mes-evento" onchange="window.renderizarApenasEventos()"></div>
-                                <div class="filter-group"><label>Buscar:</label><input type="text" id="filtro-busca-evento" onkeyup="window.renderizarApenasEventos()" placeholder="Nome..."></div>
+                                <div class="filter-group"><label>Buscar:</label><input type="text" id="filtro-busca-evento" onkeyup="window.buscaEventos()" placeholder="Nome..."></div>
                                 <button onclick="window.exportarParaExcel('eventos')" class="btn-excel"><i class="fas fa-file-excel"></i> Exportar</button>
                             </div>
                             <div class="table-container">
@@ -548,7 +650,7 @@
                         <div class="card">
                             <div class="filter-container">
                                 <div class="filter-group"><label>Mês:</label><input type="month" id="filtro-mes-oco" onchange="window.renderizarApenasOcorrencias()"></div>
-                                <div class="filter-group"><label>Buscar:</label><input type="text" id="filtro-busca-oco" onkeyup="window.renderizarApenasOcorrencias()" placeholder="Local, Desc..."></div>
+                                <div class="filter-group"><label>Buscar:</label><input type="text" id="filtro-busca-oco" onkeyup="window.buscaOcorrencias()" placeholder="Local, Desc..."></div>
                                 <div class="filter-group"><label>Status:</label><select id="filtro-status-oco" onchange="window.renderizarApenasOcorrencias()"><option value="">Todos</option><option value="Aberta">Aberta</option><option value="Em Tratativa">Em Tratativa</option><option value="Encerrada">Encerrada</option></select></div>
                                 <button onclick="window.exportarParaExcel('ocorrencias')" class="btn-excel"><i class="fas fa-file-excel"></i> Exportar</button>
                             </div>
@@ -593,6 +695,168 @@
         let visitantes = [];
         let eventos = [];
         let ocorrencias = [];
+
+        // =====================================================================
+        // CAMADA DE PERFORMANCE  (renderizacao incremental/lazy, debounce, cache)
+        // Nao altera regras de negocio: muda apenas COMO os dados sao exibidos.
+        // =====================================================================
+
+        // Debounce: evita recalcular/redesenhar a tabela a cada tecla na busca.
+        function debounce(fn, espera = 220) {
+            let t;
+            return function (...args) {
+                clearTimeout(t);
+                t = setTimeout(() => fn.apply(this, args), espera);
+            };
+        }
+
+        // Buscas com debounce (mesmo comportamento, sem travar ao digitar).
+        window.buscaDemandas    = debounce(() => window.renderizarApenasDemandas());
+        window.buscaVisitantes  = debounce(() => window.renderizarApenasVisitantes());
+        window.buscaFrota       = debounce(() => window.renderizarApenasFrota());
+        window.buscaEventos     = debounce(() => window.renderizarApenasEventos());
+        window.buscaOcorrencias = debounce(() => window.renderizarApenasOcorrencias());
+
+        // Carrega o XLSX (SheetJS) sob demanda: so baixa ~900KB ao exportar.
+        let _xlsxPromise = null;
+        function garantirXLSX() {
+            if (window.XLSX) return Promise.resolve();
+            if (_xlsxPromise) return _xlsxPromise;
+            _xlsxPromise = new Promise((resolve, reject) => {
+                const s = document.createElement('script');
+                s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+                s.onload = () => resolve();
+                s.onerror = () => { _xlsxPromise = null; reject(new Error('Falha ao carregar XLSX')); };
+                document.head.appendChild(s);
+            });
+            return _xlsxPromise;
+        }
+
+        // ---- Renderizacao incremental (scroll infinito) das tabelas ----
+        const TAM_PAGINA = 40;          // linhas renderizadas por lote
+        const _renderState = {};        // estado de paginacao por tabela
+        const _carregado = {};          // marca quando os dados ja vieram do banco
+        const _scrollRoot = () => document.querySelector('.content-area');
+        const MSG_VAZIO = {
+            'tabela-demandas': 'Nenhuma demanda encontrada.',
+            'tabela-visitantes': 'Nenhum visitante encontrado.',
+            'tabela-veiculos': 'Nenhum veiculo encontrado.',
+            'tabela-eventos': 'Nenhum evento encontrado.',
+            'tabela-ocorrencias': 'Nenhuma ocorrencia encontrada.'
+        };
+
+        function _numColunas(table) {
+            const ths = table.querySelectorAll('thead th');
+            return ths.length || 1;
+        }
+
+        function _linhasSkeleton(table, qtd = 6) {
+            const cols = _numColunas(table);
+            let html = '';
+            for (let i = 0; i < qtd; i++) {
+                let tds = '';
+                for (let c = 0; c < cols; c++) tds += '<td><span class="sk-line"></span></td>';
+                html += '<tr class="skeleton-row">' + tds + '</tr>';
+            }
+            return html;
+        }
+
+        // Renderiza a lista em lotes; cria <tr> via DocumentFragment (1 reflow/lote)
+        // e carrega os proximos lotes conforme o usuario rola a area de conteudo.
+        function renderIncremental(tableId, lista, construirLinha) {
+            const table = document.getElementById(tableId);
+            if (!table) return;
+            const tbody = table.querySelector('tbody');
+            const st = _renderState[tableId] || (_renderState[tableId] = {});
+            const _previa = Math.min(st.exibidos || 0, 400);
+
+            if (st.io) { st.io.disconnect(); st.io = null; }
+            st.lista = lista || [];
+            st.construir = construirLinha;
+            st.exibidos = 0;
+            tbody.innerHTML = '';
+
+            if (st.lista.length === 0) {
+                if (_carregado[tableId]) {
+                    const cols = _numColunas(table);
+                    tbody.innerHTML = '<tr class="empty-row"><td colspan="' + cols + '" class="empty-state"><i class="fas fa-inbox"></i><span>' + (MSG_VAZIO[tableId] || 'Nenhum registro encontrado.') + '</span></td></tr>';
+                } else {
+                    tbody.innerHTML = _linhasSkeleton(table);
+                }
+                return;
+            }
+            _appendChunk(tableId);
+            // Restaura a profundidade exibida antes de uma atualizacao em tempo real
+            // (evita "saltos" de rolagem quando outro usuario grava dados no banco).
+            let _g = 0;
+            while (st.exibidos < Math.min(_previa, st.lista.length) && _g < 400) { _appendChunk(tableId); _g++; }
+        }
+
+        function _appendChunk(tableId) {
+            const st = _renderState[tableId];
+            if (!st || !st.lista) return;
+            const table = document.getElementById(tableId);
+            if (!table) return;
+            const tbody = table.querySelector('tbody');
+
+            if (st.sentinela && st.sentinela.parentNode) st.sentinela.parentNode.removeChild(st.sentinela);
+
+            const fim = Math.min(st.exibidos + TAM_PAGINA, st.lista.length);
+            const frag = document.createDocumentFragment();
+            for (let i = st.exibidos; i < fim; i++) {
+                const tr = st.construir(st.lista[i], i);
+                if (tr) frag.appendChild(tr);
+            }
+            tbody.appendChild(frag);
+            st.exibidos = fim;
+
+            if (st.exibidos < st.lista.length) {
+                _ativarSentinela(tableId);
+            } else if (st.io) {
+                st.io.disconnect();
+                st.io = null;
+            }
+        }
+
+        function _ativarSentinela(tableId) {
+            const st = _renderState[tableId];
+            const table = document.getElementById(tableId);
+            const tbody = table.querySelector('tbody');
+
+            if (!st.sentinela) {
+                const cols = _numColunas(table);
+                const tr = document.createElement('tr');
+                tr.className = 'sentinel-row';
+                tr.innerHTML = '<td colspan="' + cols + '"><span class="loading-more"><i class="fas fa-spinner fa-spin"></i> Carregando mais...</span></td>';
+                st.sentinela = tr;
+            }
+            tbody.appendChild(st.sentinela);
+
+            if (!st.io) {
+                st.io = new IntersectionObserver((entries) => {
+                    for (const e of entries) {
+                        if (e.isIntersecting) { _appendChunk(tableId); break; }
+                    }
+                }, { root: _scrollRoot(), rootMargin: '320px 0px' });
+            } else {
+                st.io.disconnect();
+            }
+            st.io.observe(st.sentinela);
+        }
+
+        // Ao trocar de aba (display:none -> block) garante o preenchimento da area visivel.
+        function _preencherViewport(tableId) {
+            const st = _renderState[tableId];
+            const root = _scrollRoot();
+            if (!st || !st.sentinela || !root) return;
+            let guarda = 0;
+            while (st.sentinela.parentNode && guarda < 60) {
+                const r = st.sentinela.getBoundingClientRect();
+                const rr = root.getBoundingClientRect();
+                if (r.top <= rr.bottom + 320) { _appendChunk(tableId); guarda++; }
+                else break;
+            }
+        }
 
         // --- FORÇAR MAIÚSCULAS NOS CAMPOS DE TEXTO ---
         document.addEventListener('input', function(e) {
@@ -738,6 +1002,7 @@
             document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             const btn = document.getElementById('tab-' + tabId); if(btn) btn.classList.add('active');
+            requestAnimationFrame(() => _preencherViewport('tabela-' + tabId));
         }
 
         function calcularTempoDecorrido(dataInicio, dataFim = new Date()) {
@@ -855,7 +1120,7 @@
         onValue(ref(db, 'demandas'), (snapshot) => {
             const data = snapshot.val();
             demandas = data ? Object.keys(data).map(key => ({ ...data[key], id: key })) : [];
-            demandas.sort((a,b) => b.id - a.id);
+            demandas.sort((a,b) => b.id - a.id); _carregado['tabela-demandas'] = true;
             window.renderizarApenasDemandas();
         });
 
@@ -907,7 +1172,7 @@
             document.getElementById('dash-demanda-concluido').innerText = lista.filter(d => d.status === 'Concluído').length;
 
             const tbody = document.querySelector('#tabela-demandas tbody'); tbody.innerHTML = '';
-            lista.forEach(d => {
+            renderIncremental('tabela-demandas', lista, (d) => {
                 const tr = document.createElement('tr');
                 let badgeClass = d.status === 'Pendente' ? 'bg-pendente' : (d.status === 'Em Andamento' ? 'bg-andamento' : 'bg-concluido');
                 let tempoDisplay = d.status === 'Concluído' && d.dataFim ? `<span class="time-badge"><i class="fas fa-stopwatch"></i> ${calcularTempoDecorrido(d.data, d.dataFim)}</span>` : `<span class="time-badge"><i class="fas fa-hourglass-half"></i> ${calcularTempoDecorrido(d.data)}</span>`;
@@ -915,7 +1180,7 @@
                 const dataFormatada = new Date(d.data).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
                 
                 tr.innerHTML = `<td>${dataFormatada}</td><td><span class="badge" style="background:#94a3b8">${d.prioridade}</span></td><td><strong>${d.titulo}</strong><br><small style="color:var(--text-secondary)">${d.solicitante} - ${d.setor}</small></td><td><span class="badge ${badgeClass}">${d.status}</span></td><td>${tempoDisplay}</td><td style="min-width:180px">${btnAvancar}<button onclick="enviarWhatsAppDemanda('${d.id}')" class="action-btn btn-whatsapp" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button><button onclick="imprimirOS('${d.id}')" class="action-btn btn-print" title="Imprimir O.S."><i class="fas fa-print"></i></button><button onclick="editarDemanda('${d.id}')" class="action-btn btn-edit"><i class="fas fa-pen"></i></button><button onclick="deletarDemanda('${d.id}')" class="action-btn btn-delete"><i class="fas fa-trash"></i></button></td>`;
-                tbody.appendChild(tr);
+                return tr;
             });
         }
 
@@ -997,7 +1262,7 @@
         onValue(ref(db, 'visitantes'), (snapshot) => {
             const data = snapshot.val();
             visitantes = data ? Object.keys(data).map(key => ({ ...data[key], id: key })) : [];
-            visitantes.sort((a,b) => b.id - a.id);
+            visitantes.sort((a,b) => b.id - a.id); _carregado['tabela-visitantes'] = true;
             window.renderizarApenasVisitantes();
         });
 
@@ -1052,16 +1317,16 @@
             document.getElementById('dash-visitantes-total').innerText = lista.length;
             const tbody = document.querySelector('#tabela-visitantes tbody'); tbody.innerHTML = '';
             const defaultIcon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Cpath fill='%23d1d5db' d='M50 50c-13.8 0-25-11.2-25-25s11.2-25 25-25 25 11.2 25 25-11.2 25-25 25zm0 10c16.7 0 50 8.3 50 25v15H0v-15c0-16.7 33.3-25 50-25z'/%3E%3C/svg%3E";
-            lista.forEach(v => {
+            renderIncremental('tabela-visitantes', lista, (v) => {
                 const tr = document.createElement('tr');
                 const badge = v.status === 'Ativo' ? '<span class="badge bg-visitante-ativo">NA EMPRESA</span>' : '<span class="badge bg-saiu">SAIU</span>';
                 const dataEnt = new Date(v.entrada).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
                 const dataSai = v.saida ? new Date(v.saida).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '-';
                 const btnBaixa = v.status === 'Ativo' ? `<button onclick="baixaVisitante('${v.id}')" class="action-btn btn-baixa" title="Registrar Saída"><i class="fas fa-sign-out-alt"></i></button>` : '<i class="fas fa-check" style="color:var(--success); margin-right:5px"></i>';
                 let btnExcluir = ''; if (currentUserRole === 'admin') btnExcluir = `<button onclick="deletarVisitante('${v.id}')" class="action-btn btn-delete" title="Excluir"><i class="fas fa-trash"></i></button>`;
-                const imgTag = `<img src="${v.foto || defaultIcon}" class="avatar-table">`;
+                const imgTag = `<img src="${v.foto || defaultIcon}" class="avatar-table" loading="lazy" decoding="async">`;
                 tr.innerHTML = `<td>${badge}</td><td>${imgTag}<strong>${v.nome}</strong></td><td>${v.empresa || '-'}</td><td>${v.responsavel}<br><small style="color:var(--text-secondary)">${v.finalidade}</small></td><td>Ent: ${dataEnt}<br>Sai: ${dataSai}</td><td style="min-width:140px">${btnBaixa}<button onclick="editarVisitante('${v.id}')" class="action-btn btn-edit"><i class="fas fa-pen"></i></button>${btnExcluir}</td>`;
-                tbody.appendChild(tr);
+                return tr;
             });
         }
         
@@ -1106,7 +1371,7 @@
         onValue(ref(db, 'frota'), (snapshot) => {
             const data = snapshot.val();
             frota = data ? Object.keys(data).map(key => ({ ...data[key], id: key })) : [];
-            frota.sort((a,b) => b.id - a.id);
+            frota.sort((a,b) => b.id - a.id); _carregado['tabela-veiculos'] = true;
             window.renderizarApenasFrota();
         });
         
@@ -1158,7 +1423,7 @@
             document.getElementById('dash-servidor-count').innerText = lista.filter(f => f.tipo === 'servidor').length; 
             document.getElementById('dash-visitante-count').innerText = lista.filter(f => f.tipo === 'visitante').length;
             const tbody = document.querySelector('#tabela-veiculos tbody'); tbody.innerHTML = '';
-            lista.forEach(f => {
+            renderIncremental('tabela-veiculos', lista, (f) => {
                 const tr = document.createElement('tr');
                 const badge = f.status === 'Aberto' ? '<span class="badge bg-estacionado">ESTACIONADO</span>' : '<span class="badge bg-saiu">FINALIZADO</span>';
                 const icon = f.tipo === 'servidor' ? '<i class="fas fa-id-badge" style="color:var(--servidor)"></i>' : '<i class="fas fa-user-tag" style="color:var(--visitante)"></i>';
@@ -1167,7 +1432,7 @@
                 const btnBaixa = f.status === 'Aberto' ? `<button onclick="baixaVeiculo('${f.id}')" class="action-btn btn-baixa"><i class="fas fa-sign-out-alt"></i></button>` : '<i class="fas fa-check" style="color:var(--success); margin-right:5px"></i>';
                 let btnExcluir = ''; if (currentUserRole === 'admin') btnExcluir = `<button onclick="deletarVeiculo('${f.id}')" class="action-btn btn-delete" title="Excluir"><i class="fas fa-trash"></i></button>`;
                 tr.innerHTML = `<td>${badge}</td><td><small>${icon} ${f.tipo}</small></td><td><strong>${f.motorista}</strong><br><small style="color:var(--text-secondary)">${f.contato||''}</small></td><td>${f.carro}</td><td>${f.setor||'-'}</td><td style="font-size:0.85rem">Ent: ${dIn}<br>Sai: ${dOut}</td><td style="min-width:140px">${btnBaixa}<button onclick="editarVeiculo('${f.id}')" class="action-btn btn-edit"><i class="fas fa-pen"></i></button>${btnExcluir}</td>`;
-                tbody.appendChild(tr);
+                return tr;
             });
         }
         
@@ -1189,7 +1454,7 @@
         onValue(ref(db, 'eventos'), (snapshot) => {
             const data = snapshot.val();
             eventos = data ? Object.keys(data).map(key => ({ ...data[key], id: key })) : [];
-            eventos.sort((a,b) => new Date(b.data) - new Date(a.data)); window.renderizarApenasEventos();
+            eventos.sort((a,b) => new Date(b.data) - new Date(a.data)); _carregado['tabela-eventos'] = true; window.renderizarApenasEventos();
         });
         
         window.editarEvento = function(id) {
@@ -1228,7 +1493,7 @@
             document.getElementById('dash-eventos-interno').innerText = qtdInterno; document.getElementById('dash-eventos-externo').innerText = qtdExterno; 
             const totalPublico = lista.reduce((sum, ev) => sum + (parseInt(ev.publico) || 0), 0); document.getElementById('dash-eventos-publico').innerText = totalPublico;
             const tbody = document.querySelector('#tabela-eventos tbody'); tbody.innerHTML = '';
-            lista.forEach(ev => {
+            renderIncremental('tabela-eventos', lista, (ev) => {
                 const tr = document.createElement('tr'); 
                 const badgeClass = ev.tipo === 'Interno' ? 'bg-interno' : 'bg-externo'; 
                 const badge = `<span class="badge ${badgeClass}">${ev.tipo}</span>`; 
@@ -1236,7 +1501,7 @@
                 const obsText = ev.obs ? `<div style="font-size:0.75rem; color:#6b7280; font-style:italic; margin-top:4px; padding-top:4px; border-top:1px dashed #e5e7eb"><i class="fas fa-comment-alt" style="font-size:0.7rem"></i> ${ev.obs}</div>` : '';
                 let btnExcluir = ''; if (currentUserRole === 'admin') { btnExcluir = `<button onclick="deletarEvento('${ev.id}')" class="action-btn btn-delete"><i class="fas fa-trash"></i></button>`; }
                 tr.innerHTML = `<td>${formatarData(ev.data)}</td><td>${badge}</td><td><strong>${ev.nome}</strong>${iconCoffee}<br><small style="color:var(--text-secondary)">${ev.local}</small>${obsText}</td><td>${ev.organizador}</td><td><i class="fas fa-user"></i> ${ev.publico}</td><td style="min-width:100px"><button onclick="editarEvento('${ev.id}')" class="action-btn btn-edit"><i class="fas fa-pen"></i></button>${btnExcluir}</td>`;
-                tbody.appendChild(tr);
+                return tr;
             });
         }
 
@@ -1272,7 +1537,7 @@
         onValue(ref(db, 'ocorrencias'), (snap) => {
             const data = snap.val();
             ocorrencias = data ? Object.keys(data).map(k => ({...data[k], id: k})) : [];
-            ocorrencias.sort((a,b) => new Date(b.data) - new Date(a.data)); window.renderizarApenasOcorrencias();
+            ocorrencias.sort((a,b) => new Date(b.data) - new Date(a.data)); _carregado['tabela-ocorrencias'] = true; window.renderizarApenasOcorrencias();
         });
         
         window.editarOcorrencia = function(id) {
@@ -1322,7 +1587,7 @@
             });
             document.getElementById('dash-oco-total').innerText = lista.length; document.getElementById('dash-oco-abertas').innerText = lista.filter(o => o.status === 'Aberta').length; document.getElementById('dash-oco-tratativa').innerText = lista.filter(o => o.status === 'Em Tratativa').length; document.getElementById('dash-oco-encerradas').innerText = lista.filter(o => o.status === 'Encerrada').length;
             const tbody = document.querySelector('#tabela-ocorrencias tbody'); tbody.innerHTML = '';
-            lista.forEach(o => {
+            renderIncremental('tabela-ocorrencias', lista, (o) => {
                 const tr = document.createElement('tr');
                 const gravMap = {'Baixa':'bg-baixa','Média':'bg-media','Alta':'bg-alta','Crítica':'bg-critica'}; const badgeGrav = `<span class="badge ${gravMap[o.gravidade]||'bg-pendente'}">${o.gravidade}</span>`;
                 const statMap = {'Aberta':'bg-estacionado','Em Tratativa':'bg-andamento','Encerrada':'bg-concluido'}; const badgeStat = `<span class="badge ${statMap[o.status]}">${o.status}</span>`;
@@ -1332,7 +1597,7 @@
                 const textoTitulo = o.numero ? `<strong>#${o.numero} - ${o.categoria}</strong>` : `<strong>${o.categoria}</strong>`;
 
                 tr.innerHTML = `<td>${formatarDataHora(o.data)}</td><td>${badgeGrav}</td><td>${textoTitulo}<br><small>${o.unidade} - ${o.local}</small></td><td>${o.descricao.substring(0,50)}...<br><small style="color:var(--text-secondary)">Resp: ${o.responsavel}</small></td><td>${badgeStat}</td><td>${tempo}</td><td style="min-width:180px"><button onclick="enviarWhatsAppOcorrencia('${o.id}')" class="action-btn btn-whatsapp" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button><button onclick="imprimirRO('${o.id}')" class="action-btn btn-print" title="Imprimir R.O."><i class="fas fa-print"></i></button><button onclick="editarOcorrencia('${o.id}')" class="action-btn btn-edit"><i class="fas fa-pen"></i></button>${btnExcluir}</td>`;
-                tbody.appendChild(tr);
+                return tr;
             });
         }
 
@@ -1616,7 +1881,9 @@
         }
 
         /* --- EXPORTAÇÃO --- */
-        window.exportarParaExcel = function(tipo) {
+        window.exportarParaExcel = async function(tipo) {
+            try { await garantirXLSX(); }
+            catch (e) { alert('Nao foi possivel carregar o modulo de exportacao. Verifique sua conexao e tente novamente.'); return; }
             let dadosRaw = []; let nomeArquivo = ""; let dadosFormatados = [];
             
             if (tipo === 'demandas') { 
