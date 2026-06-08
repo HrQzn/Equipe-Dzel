@@ -339,17 +339,17 @@
     <div id="mobile-overlay" class="mobile-overlay" onclick="toggleMobileSidebar()"></div>
 
     <!-- Modal: registrar saida de veiculo (Garagem) com data/hora -->
-    <div id="modal-saida-veiculo" class="modal-overlay" onclick="if(event.target===this) fecharModalSaidaVeiculo()">
+    <div id="modal-saida" class="modal-overlay" onclick="if(event.target===this) fecharModalSaida()">
         <div class="modal-card">
-            <div class="modal-header"><i class="fas fa-sign-out-alt" style="color:var(--estacionado)"></i> Registrar Saída do Veículo</div>
+            <div class="modal-header"><i class="fas fa-sign-out-alt" style="color:var(--estacionado)"></i> <span id="modal-saida-titulo">Registrar Saída</span></div>
             <div class="modal-body">
                 <label for="modal-saida-data">Data e hora da saída</label>
-                <input type="datetime-local" id="modal-saida-data" class="login-input" onkeyup="if(event.key==='Enter') confirmarSaidaVeiculo()">
+                <input type="datetime-local" id="modal-saida-data" class="login-input" onkeyup="if(event.key==='Enter') confirmarSaida()">
                 <small class="modal-hint">A hora atual já vem preenchida — ajuste apenas se a saída ocorreu em outro horário.</small>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn-cancel-modal" onclick="fecharModalSaidaVeiculo()">Cancelar</button>
-                <button type="button" class="btn-confirm-modal" onclick="confirmarSaidaVeiculo()"><i class="fas fa-check"></i> Confirmar Saída</button>
+                <button type="button" class="btn-cancel-modal" onclick="fecharModalSaida()">Cancelar</button>
+                <button type="button" class="btn-confirm-modal" onclick="confirmarSaida()"><i class="fas fa-check"></i> Confirmar Saída</button>
             </div>
         </div>
     </div>
@@ -471,7 +471,7 @@
                         </div>
                         <div class="card">
                             <div class="filter-container">
-                                <div class="filter-group"><label>Mês Ref:</label><input type="month" id="filtro-mes-demanda" onchange="window.renderizarApenasDemandas()"></div>
+                                <div class="filter-group"><label>Mês Ref:</label><input type="month" id="filtro-mes-demanda" onchange="window.renderizarApenasDemandas()"></div><div class="filter-group"><label>Dia:</label><input type="date" id="filtro-dia-demanda" onchange="window.renderizarApenasDemandas()"></div>
                                 <div class="filter-group"><label>Buscar:</label><input type="text" id="filtro-texto-demanda" onkeyup="window.buscaDemandas()" placeholder="Ex: Lâmpada..."></div>
                                 <div class="filter-group"><label>Status:</label><select id="filtro-status-demanda" onchange="window.renderizarApenasDemandas()"><option value="">Todos</option><option value="Pendente">Pendente</option><option value="Em Andamento">Em Andamento</option><option value="Concluído">Concluído</option></select></div>
                                 <button onclick="window.exportarParaExcel('demandas')" class="btn-excel"><i class="fas fa-file-excel"></i> Exportar</button>
@@ -528,7 +528,7 @@
                         </div>
                         <div class="card">
                             <div class="filter-container">
-                                <div class="filter-group"><label>Mês:</label><input type="month" id="filtro-mes-vis" onchange="window.renderizarApenasVisitantes()"></div>
+                                <div class="filter-group"><label>Mês:</label><input type="month" id="filtro-mes-vis" onchange="window.renderizarApenasVisitantes()"></div><div class="filter-group"><label>Dia:</label><input type="date" id="filtro-dia-vis" onchange="window.renderizarApenasVisitantes()"></div>
                                 <div class="filter-group"><label>Buscar:</label><input type="text" id="filtro-busca-vis" onkeyup="window.buscaVisitantes()" placeholder="Nome, Empresa..."></div>
                                 <button onclick="window.exportarParaExcel('visitantes')" class="btn-excel"><i class="fas fa-file-excel"></i> Exportar</button>
                             </div>
@@ -574,7 +574,7 @@
                         </div>
                         <div class="card">
                             <div class="filter-container">
-                                <div class="filter-group"><label>Mês:</label><input type="month" id="filtro-mes-frota" onchange="window.renderizarApenasFrota()"></div>
+                                <div class="filter-group"><label>Mês:</label><input type="month" id="filtro-mes-frota" onchange="window.renderizarApenasFrota()"></div><div class="filter-group"><label>Dia:</label><input type="date" id="filtro-dia-frota" onchange="window.renderizarApenasFrota()"></div>
                                 <div class="filter-group"><label>Buscar:</label><input type="text" id="filtro-busca-frota" onkeyup="window.buscaFrota()" placeholder="Nome, Placa..."></div>
                                 <button onclick="window.exportarParaExcel('veiculos')" class="btn-excel"><i class="fas fa-file-excel"></i> Exportar</button>
                             </div>
@@ -625,7 +625,7 @@
                         </div>
                         <div class="card">
                             <div class="filter-container">
-                                <div class="filter-group"><label>Mês:</label><input type="month" id="filtro-mes-evento" onchange="window.renderizarApenasEventos()"></div>
+                                <div class="filter-group"><label>Mês:</label><input type="month" id="filtro-mes-evento" onchange="window.renderizarApenasEventos()"></div><div class="filter-group"><label>Dia:</label><input type="date" id="filtro-dia-evento" onchange="window.renderizarApenasEventos()"></div>
                                 <div class="filter-group"><label>Buscar:</label><input type="text" id="filtro-busca-evento" onkeyup="window.buscaEventos()" placeholder="Nome..."></div>
                                 <button onclick="window.exportarParaExcel('eventos')" class="btn-excel"><i class="fas fa-file-excel"></i> Exportar</button>
                             </div>
@@ -681,7 +681,7 @@
                         </div>
                         <div class="card">
                             <div class="filter-container">
-                                <div class="filter-group"><label>Mês:</label><input type="month" id="filtro-mes-oco" onchange="window.renderizarApenasOcorrencias()"></div>
+                                <div class="filter-group"><label>Mês:</label><input type="month" id="filtro-mes-oco" onchange="window.renderizarApenasOcorrencias()"></div><div class="filter-group"><label>Dia:</label><input type="date" id="filtro-dia-oco" onchange="window.renderizarApenasOcorrencias()"></div>
                                 <div class="filter-group"><label>Buscar:</label><input type="text" id="filtro-busca-oco" onkeyup="window.buscaOcorrencias()" placeholder="Local, Desc..."></div>
                                 <div class="filter-group"><label>Status:</label><select id="filtro-status-oco" onchange="window.renderizarApenasOcorrencias()"><option value="">Todos</option><option value="Aberta">Aberta</option><option value="Em Tratativa">Em Tratativa</option><option value="Encerrada">Encerrada</option></select></div>
                                 <button onclick="window.exportarParaExcel('ocorrencias')" class="btn-excel"><i class="fas fa-file-excel"></i> Exportar</button>
@@ -1188,11 +1188,11 @@
         }
 
         window.renderizarApenasDemandas = function() {
-            const filtroMes = document.getElementById('filtro-mes-demanda').value; 
+            const filtroMes = document.getElementById('filtro-mes-demanda').value; const filtroDia = document.getElementById('filtro-dia-demanda').value; 
             const filtroStatus = document.getElementById('filtro-status-demanda').value;
             const filtroTexto = document.getElementById('filtro-texto-demanda').value.toLowerCase();
             const lista = demandas.filter(d => {
-                const bateData = !filtroMes || d.data.startsWith(filtroMes);
+                const bateData = (!filtroMes || d.data.startsWith(filtroMes)) && (!filtroDia || d.data.startsWith(filtroDia));
                 const bateStatus = !filtroStatus || d.status === filtroStatus;
                 const textoGeral = (d.titulo + ' ' + d.setor + ' ' + d.solicitante + ' ' + (d.numeroOS || '')).toLowerCase();
                 const bateTexto = !filtroTexto || textoGeral.includes(filtroTexto);
@@ -1338,10 +1338,10 @@
         }
 
         window.renderizarApenasVisitantes = function() {
-            const mes = document.getElementById('filtro-mes-vis').value; 
+            const mes = document.getElementById('filtro-mes-vis').value; const dia = document.getElementById('filtro-dia-vis').value; 
             const termo = document.getElementById('filtro-busca-vis').value.toLowerCase();
             const lista = visitantes.filter(v => { 
-                const bateMes = !mes || v.entrada.startsWith(mes); 
+                const bateMes = (!mes || v.entrada.startsWith(mes)) && (!dia || v.entrada.startsWith(dia)); 
                 const bateTermo = !termo || v.nome.toLowerCase().includes(termo) || (v.empresa && v.empresa.toLowerCase().includes(termo)); 
                 return bateMes && bateTermo; 
             });
@@ -1362,11 +1362,7 @@
             });
         }
         
-        window.baixaVisitante = function(id) { 
-            if(confirm('Confirmar saída do visitante?')) { 
-                update(ref(db, 'visitantes/' + id), { status: 'Saiu', saida: new Date().toISOString() }); 
-            } 
-        }
+        window.baixaVisitante = function(id) { abrirModalSaida(id, 'visitante', 'Registrar Saída do Visitante'); }
 
         // --- 3. VEICULOS --- 
         window.atualizarLabels = function() {
@@ -1443,10 +1439,10 @@
         }
         
         window.renderizarApenasFrota = function() {
-            const mes = document.getElementById('filtro-mes-frota').value; 
+            const mes = document.getElementById('filtro-mes-frota').value; const dia = document.getElementById('filtro-dia-frota').value; 
             const busca = document.getElementById('filtro-busca-frota').value.toLowerCase();
             const lista = frota.filter(f => { 
-                const bData = !mes || f.horaInicial.startsWith(mes); 
+                const bData = (!mes || f.horaInicial.startsWith(mes)) && (!dia || f.horaInicial.startsWith(dia)); 
                 const bTexto = !busca || (f.motorista+f.carro+f.setor).toLowerCase().includes(busca); 
                 return bData && bTexto; 
             });
@@ -1468,25 +1464,32 @@
             });
         }
         
-        let _veiculoSaidaId = null;
-        // Abre o modal de saida com a data/hora atual ja preenchida (editavel pelo usuario).
-        window.baixaVeiculo = function(id) {
-            _veiculoSaidaId = id;
+        // Modal de saida reutilizavel (Garagem e Recepcao): data/hora ja preenchida e editavel.
+        let _saidaCtx = null; // { id, tipo }
+        function abrirModalSaida(id, tipo, titulo) {
+            _saidaCtx = { id: id, tipo: tipo };
+            document.getElementById('modal-saida-titulo').innerText = titulo;
             document.getElementById('modal-saida-data').value = getLocalISO();
-            document.getElementById('modal-saida-veiculo').classList.add('show');
+            document.getElementById('modal-saida').classList.add('show');
             setTimeout(() => { try { document.getElementById('modal-saida-data').focus(); } catch (e) {} }, 50);
         }
-        window.fecharModalSaidaVeiculo = function() {
-            document.getElementById('modal-saida-veiculo').classList.remove('show');
-            _veiculoSaidaId = null;
+        window.fecharModalSaida = function() {
+            document.getElementById('modal-saida').classList.remove('show');
+            _saidaCtx = null;
         }
-        window.confirmarSaidaVeiculo = function() {
-            if (_veiculoSaidaId === null) return;
+        window.confirmarSaida = function() {
+            if (!_saidaCtx) return;
             const valor = document.getElementById('modal-saida-data').value;
             if (!valor) { alert('Informe a data e hora da saida.'); return; }
-            update(ref(db, 'frota/' + _veiculoSaidaId), { horaFinal: new Date(valor).toISOString(), status: 'Fechado' });
-            fecharModalSaidaVeiculo();
+            const iso = new Date(valor).toISOString();
+            if (_saidaCtx.tipo === 'veiculo') {
+                update(ref(db, 'frota/' + _saidaCtx.id), { horaFinal: iso, status: 'Fechado' });
+            } else if (_saidaCtx.tipo === 'visitante') {
+                update(ref(db, 'visitantes/' + _saidaCtx.id), { saida: iso, status: 'Saiu' });
+            }
+            fecharModalSaida();
         }
+        window.baixaVeiculo = function(id) { abrirModalSaida(id, 'veiculo', 'Registrar Saída do Veículo'); }
 
         // --- 4. EVENTOS --- 
         const formEvento = document.getElementById('form-evento');
@@ -1529,10 +1532,10 @@
         }
         
         window.renderizarApenasEventos = function() {
-            const mes = document.getElementById('filtro-mes-evento').value; 
+            const mes = document.getElementById('filtro-mes-evento').value; const dia = document.getElementById('filtro-dia-evento').value; 
             const busca = document.getElementById('filtro-busca-evento').value.toLowerCase();
             const lista = eventos.filter(ev => { 
-                const bData = !mes || ev.data.startsWith(mes); 
+                const bData = (!mes || ev.data.startsWith(mes)) && (!dia || ev.data.startsWith(dia)); 
                 const bTexto = !busca || (ev.nome + ev.organizador + ev.local).toLowerCase().includes(busca); return bData && bTexto; 
             });
             document.getElementById('dash-eventos-qtd').innerText = lista.length; 
@@ -1624,11 +1627,11 @@
         }
         
         window.renderizarApenasOcorrencias = function() {
-            const mes = document.getElementById('filtro-mes-oco').value; 
+            const mes = document.getElementById('filtro-mes-oco').value; const dia = document.getElementById('filtro-dia-oco').value; 
             const termo = document.getElementById('filtro-busca-oco').value.toLowerCase(); 
             const stat = document.getElementById('filtro-status-oco').value;
             const lista = ocorrencias.filter(o => { 
-                const bMes = !mes || o.data.startsWith(mes); 
+                const bMes = (!mes || o.data.startsWith(mes)) && (!dia || o.data.startsWith(dia)); 
                 const bStat = !stat || o.status === stat; 
                 const bTxt = !termo || (o.unidade+o.local+o.categoria+o.descricao+o.responsavel+(o.numero||'')).toLowerCase().includes(termo); return bMes && bStat && bTxt; 
             });
