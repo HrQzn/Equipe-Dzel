@@ -890,6 +890,39 @@
             }
         }
 
+        // =====================================================================
+        // CAMADA DE SEGURANCA/UX (escape de HTML, anti duplo-envio, tecla Esc)
+        // =====================================================================
+
+        // Escapa dados do usuario antes de inseri-los em innerHTML (previne XSS
+        // armazenado: um registro contendo <img onerror=...> viraria script para
+        // todos os usuarios). Os dados gravados no banco permanecem intactos --
+        // o escape acontece apenas na EXIBICAO.
+        const _escMap = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+        function esc(valor) { return valor == null ? '' : String(valor).replace(/[&<>"']/g, c => _escMap[c]); }
+        function escObj(obj) {
+            if (obj == null) return obj;
+            const copia = {};
+            for (const k in obj) { const v = obj[k]; copia[k] = (typeof v === 'string') ? esc(v) : v; }
+            return copia;
+        }
+
+        // Anti duplo-envio: evita registros duplicados por clique/toque duplo
+        // no botao de submit (comum no celular). Nao altera o fluxo: o botao
+        // reabilita sozinho em seguida.
+        document.addEventListener('submit', (e) => {
+            const btn = e.submitter || (e.target && e.target.querySelector('button[type="submit"]'));
+            if (btn && !btn.disabled) { btn.disabled = true; setTimeout(() => { btn.disabled = false; }, 1200); }
+        }, true);
+
+        // Acessibilidade: Esc fecha o modal de saida.
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const m = document.getElementById('modal-saida');
+                if (m && m.classList.contains('show')) window.fecharModalSaida();
+            }
+        });
+
         // --- FORÇAR MAIÚSCULAS NOS CAMPOS DE TEXTO ---
         document.addEventListener('input', function(e) {
             if (e.target.matches('input:not(.login-input)[type="text"], textarea:not(.login-input)')) {
@@ -962,7 +995,7 @@
 
             if (CREDENCIAIS[userKey] && CREDENCIAIS[userKey].passMask === passDigitadaMask) {
                 currentUserRole = CREDENCIAIS[userKey].role;
-                localStorage.setItem('zeladoria_user', JSON.stringify(CREDENCIAIS[userKey]));
+                localStorage.setItem('zeladoria_user', JSON.stringify({ role: CREDENCIAIS[userKey].role, nome: CREDENCIAIS[userKey].nome }));
                 iniciarSistema(CREDENCIAIS[userKey]);
             } else {
                 document.getElementById('login-error').style.display = 'flex';
@@ -1024,7 +1057,7 @@
 
         document.getElementById('date-display').innerText = new Date().toLocaleDateString('pt-BR', {weekday: 'short', day:'numeric', month:'long'});
         document.getElementById('demanda-data').value = getLocalISO();
-        document.getElementById('evento-data').valueAsDate = new Date();
+        document.getElementById('evento-data').value = getLocalISO().slice(0, 10);
         document.getElementById('vis-entrada').value = getLocalISO();
         document.getElementById('veiculo-hora-saida').value = getLocalISO();
         document.getElementById('oco-data').value = getLocalISO();
@@ -1192,7 +1225,7 @@
             const filtroStatus = document.getElementById('filtro-status-demanda').value;
             const filtroTexto = document.getElementById('filtro-texto-demanda').value.toLowerCase();
             const lista = demandas.filter(d => {
-                const bateData = (!filtroMes || d.data.startsWith(filtroMes)) && (!filtroDia || d.data.startsWith(filtroDia));
+                const dData = d.data || ''; const bateData = (!filtroMes || dData.startsWith(filtroMes)) && (!filtroDia || dData.startsWith(filtroDia));
                 const bateStatus = !filtroStatus || d.status === filtroStatus;
                 const textoGeral = (d.titulo + ' ' + d.setor + ' ' + d.solicitante + ' ' + (d.numeroOS || '')).toLowerCase();
                 const bateTexto = !filtroTexto || textoGeral.includes(filtroTexto);
@@ -1203,8 +1236,8 @@
             document.getElementById('dash-demanda-andamento').innerText = lista.filter(d => d.status === 'Em Andamento').length;
             document.getElementById('dash-demanda-concluido').innerText = lista.filter(d => d.status === 'Concluído').length;
 
-            const tbody = document.querySelector('#tabela-demandas tbody'); tbody.innerHTML = '';
             renderIncremental('tabela-demandas', lista, (d) => {
+                d = escObj(d);
                 const tr = document.createElement('tr');
                 let badgeClass = d.status === 'Pendente' ? 'bg-pendente' : (d.status === 'Em Andamento' ? 'bg-andamento' : 'bg-concluido');
                 let tempoDisplay = d.status === 'Concluído' && d.dataFim ? `<span class="time-badge"><i class="fas fa-stopwatch"></i> ${calcularTempoDecorrido(d.data, d.dataFim)}</span>` : `<span class="time-badge"><i class="fas fa-hourglass-half"></i> ${calcularTempoDecorrido(d.data)}</span>`;
@@ -1341,15 +1374,15 @@
             const mes = document.getElementById('filtro-mes-vis').value; const dia = document.getElementById('filtro-dia-vis').value; 
             const termo = document.getElementById('filtro-busca-vis').value.toLowerCase();
             const lista = visitantes.filter(v => { 
-                const bateMes = (!mes || v.entrada.startsWith(mes)) && (!dia || v.entrada.startsWith(dia)); 
+                const vEnt = v.entrada || ''; const bateMes = (!mes || vEnt.startsWith(mes)) && (!dia || vEnt.startsWith(dia)); 
                 const bateTermo = !termo || v.nome.toLowerCase().includes(termo) || (v.empresa && v.empresa.toLowerCase().includes(termo)); 
                 return bateMes && bateTermo; 
             });
             document.getElementById('dash-visitantes-ativos').innerText = lista.filter(v => v.status === 'Ativo').length; 
             document.getElementById('dash-visitantes-total').innerText = lista.length;
-            const tbody = document.querySelector('#tabela-visitantes tbody'); tbody.innerHTML = '';
             const defaultIcon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Cpath fill='%23d1d5db' d='M50 50c-13.8 0-25-11.2-25-25s11.2-25 25-25 25 11.2 25 25-11.2 25-25 25zm0 10c16.7 0 50 8.3 50 25v15H0v-15c0-16.7 33.3-25 50-25z'/%3E%3C/svg%3E";
             renderIncremental('tabela-visitantes', lista, (v) => {
+                v = escObj(v);
                 const tr = document.createElement('tr');
                 const badge = v.status === 'Ativo' ? '<span class="badge bg-visitante-ativo">NA EMPRESA</span>' : '<span class="badge bg-saiu">SAIU</span>';
                 const dataEnt = new Date(v.entrada).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
@@ -1442,7 +1475,7 @@
             const mes = document.getElementById('filtro-mes-frota').value; const dia = document.getElementById('filtro-dia-frota').value; 
             const busca = document.getElementById('filtro-busca-frota').value.toLowerCase();
             const lista = frota.filter(f => { 
-                const bData = (!mes || f.horaInicial.startsWith(mes)) && (!dia || f.horaInicial.startsWith(dia)); 
+                const fIni = f.horaInicial || ''; const bData = (!mes || fIni.startsWith(mes)) && (!dia || fIni.startsWith(dia)); 
                 const bTexto = !busca || (f.motorista+f.carro+f.setor).toLowerCase().includes(busca); 
                 return bData && bTexto; 
             });
@@ -1450,8 +1483,8 @@
             document.getElementById('dash-frota-estacionados').innerText = lista.filter(f => f.status === 'Aberto').length; 
             document.getElementById('dash-servidor-count').innerText = lista.filter(f => f.tipo === 'servidor').length; 
             document.getElementById('dash-visitante-count').innerText = lista.filter(f => f.tipo === 'visitante').length;
-            const tbody = document.querySelector('#tabela-veiculos tbody'); tbody.innerHTML = '';
             renderIncremental('tabela-veiculos', lista, (f) => {
+                f = escObj(f);
                 const tr = document.createElement('tr');
                 const badge = f.status === 'Aberto' ? '<span class="badge bg-estacionado">ESTACIONADO</span>' : '<span class="badge bg-saiu">FINALIZADO</span>';
                 const icon = f.tipo === 'servidor' ? '<i class="fas fa-id-badge" style="color:var(--servidor)"></i>' : '<i class="fas fa-user-tag" style="color:var(--visitante)"></i>';
@@ -1483,9 +1516,9 @@
             if (!valor) { alert('Informe a data e hora da saida.'); return; }
             const iso = new Date(valor).toISOString();
             if (_saidaCtx.tipo === 'veiculo') {
-                update(ref(db, 'frota/' + _saidaCtx.id), { horaFinal: iso, status: 'Fechado' });
+                update(ref(db, 'frota/' + _saidaCtx.id), { horaFinal: iso, status: 'Fechado' }).catch((e) => alert('Erro ao registrar saída: ' + e));
             } else if (_saidaCtx.tipo === 'visitante') {
-                update(ref(db, 'visitantes/' + _saidaCtx.id), { saida: iso, status: 'Saiu' });
+                update(ref(db, 'visitantes/' + _saidaCtx.id), { saida: iso, status: 'Saiu' }).catch((e) => alert('Erro ao registrar saída: ' + e));
             }
             fecharModalSaida();
         }
@@ -1518,7 +1551,7 @@
         
         window.cancelarEdicaoEvento = function() { 
             document.getElementById('evento-id-edit').value = ""; formEvento.reset(); 
-            document.getElementById('evento-data').valueAsDate = new Date(); document.getElementById('evento-coffee').checked = false; document.getElementById('evento-obs').value = ""; 
+            document.getElementById('evento-data').value = getLocalISO().slice(0, 10); document.getElementById('evento-coffee').checked = false; document.getElementById('evento-obs').value = ""; 
             document.getElementById('titulo-form-evento').innerHTML = '<i class="fas fa-calendar-plus" style="color:var(--evento)"></i> Registrar Evento'; 
             const btn = document.getElementById('btn-submit-evento'); btn.innerText = "Salvar Evento"; btn.style.backgroundColor = "var(--evento)"; 
             document.getElementById('btn-cancel-evento').style.display = "none"; 
@@ -1535,16 +1568,16 @@
             const mes = document.getElementById('filtro-mes-evento').value; const dia = document.getElementById('filtro-dia-evento').value; 
             const busca = document.getElementById('filtro-busca-evento').value.toLowerCase();
             const lista = eventos.filter(ev => { 
-                const bData = (!mes || ev.data.startsWith(mes)) && (!dia || ev.data.startsWith(dia)); 
+                const evData = ev.data || ''; const bData = (!mes || evData.startsWith(mes)) && (!dia || evData.startsWith(dia)); 
                 const bTexto = !busca || (ev.nome + ev.organizador + ev.local).toLowerCase().includes(busca); return bData && bTexto; 
             });
             document.getElementById('dash-eventos-qtd').innerText = lista.length; 
             const qtdInterno = lista.filter(e => e.tipo === 'Interno').length; const qtdExterno = lista.filter(e => e.tipo === 'Externo').length; 
             document.getElementById('dash-eventos-interno').innerText = qtdInterno; document.getElementById('dash-eventos-externo').innerText = qtdExterno; 
             const totalPublico = lista.reduce((sum, ev) => sum + (parseInt(ev.publico) || 0), 0); document.getElementById('dash-eventos-publico').innerText = totalPublico;
-            const tbody = document.querySelector('#tabela-eventos tbody'); tbody.innerHTML = '';
             renderIncremental('tabela-eventos', lista, (ev) => {
-                const tr = document.createElement('tr'); 
+                ev = escObj(ev);
+                const tr = document.createElement('tr');
                 const badgeClass = ev.tipo === 'Interno' ? 'bg-interno' : 'bg-externo'; 
                 const badge = `<span class="badge ${badgeClass}">${ev.tipo}</span>`; 
                 const iconCoffee = ev.coffee ? '<i class="fas fa-coffee" title="Terá Coffee Break" style="color:var(--coffee); margin-left:5px"></i>' : ''; 
@@ -1631,13 +1664,13 @@
             const termo = document.getElementById('filtro-busca-oco').value.toLowerCase(); 
             const stat = document.getElementById('filtro-status-oco').value;
             const lista = ocorrencias.filter(o => { 
-                const bMes = (!mes || o.data.startsWith(mes)) && (!dia || o.data.startsWith(dia)); 
+                const oData = o.data || ''; const bMes = (!mes || oData.startsWith(mes)) && (!dia || oData.startsWith(dia)); 
                 const bStat = !stat || o.status === stat; 
                 const bTxt = !termo || (o.unidade+o.local+o.categoria+o.descricao+o.responsavel+(o.numero||'')).toLowerCase().includes(termo); return bMes && bStat && bTxt; 
             });
             document.getElementById('dash-oco-total').innerText = lista.length; document.getElementById('dash-oco-abertas').innerText = lista.filter(o => o.status === 'Aberta').length; document.getElementById('dash-oco-tratativa').innerText = lista.filter(o => o.status === 'Em Tratativa').length; document.getElementById('dash-oco-encerradas').innerText = lista.filter(o => o.status === 'Encerrada').length;
-            const tbody = document.querySelector('#tabela-ocorrencias tbody'); tbody.innerHTML = '';
             renderIncremental('tabela-ocorrencias', lista, (o) => {
+                o = escObj(o);
                 const tr = document.createElement('tr');
                 const gravMap = {'Baixa':'bg-baixa','Média':'bg-media','Alta':'bg-alta','Crítica':'bg-critica'}; const badgeGrav = `<span class="badge ${gravMap[o.gravidade]||'bg-pendente'}">${o.gravidade}</span>`;
                 const statMap = {'Aberta':'bg-estacionado','Em Tratativa':'bg-andamento','Encerrada':'bg-concluido'}; const badgeStat = `<span class="badge ${statMap[o.status]}">${o.status}</span>`;
@@ -1669,7 +1702,7 @@
         }
 
         window.imprimirRO = function(id) {
-            const o = ocorrencias.find(item => String(item.id) === String(id));
+            const o = escObj(ocorrencias.find(item => String(item.id) === String(id)));
             if (!o) return;
 
             const dataObj = new Date(o.data);
@@ -1768,7 +1801,7 @@
         }
 
         window.imprimirOS = function(id) {
-            const d = demandas.find(item => String(item.id) === String(id));
+            const d = escObj(demandas.find(item => String(item.id) === String(id)));
             if (!d) return;
 
             const dataAbertura = new Date(d.data).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
