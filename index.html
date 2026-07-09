@@ -326,6 +326,13 @@
         .btn-confirm-modal { background: var(--estacionado); color: #fff; border: none; padding: 10px 18px; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: var(--transition); }
         .btn-confirm-modal:hover { filter: brightness(1.06); transform: translateY(-1px); }
 
+        /* Modal de exportacao (escopo filtrado x completo) */
+        .export-msg { font-size: .9rem; color: var(--text-secondary); margin-bottom: 14px; line-height: 1.45; }
+        .export-opcoes { display: flex; flex-direction: column; gap: 10px; }
+        .btn-export-opcao { background: var(--excel); color: #fff; border: none; padding: 12px 16px; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: .9rem; transition: var(--transition); }
+        .btn-export-opcao:hover { filter: brightness(1.07); transform: translateY(-1px); }
+        .btn-export-opcao.secundario { background: #475569; }
+
         #print-container { display: none; background: white; width: 100%; min-height: 100vh; }
         @media print {
             body, html { height: 100% !important; background: white !important; overflow: auto !important; }
@@ -354,6 +361,23 @@
         </div>
     </div>
     
+    <!-- Modal: escolher escopo da exportacao (filtrados x todos) -->
+    <div id="modal-export" class="modal-overlay" onclick="if(event.target===this) fecharModalExport()">
+        <div class="modal-card">
+            <div class="modal-header"><i class="fas fa-file-excel" style="color:var(--excel)"></i> Exportar para Excel</div>
+            <div class="modal-body">
+                <p id="modal-export-msg" class="export-msg">Há filtros ativos. O que deseja exportar?</p>
+                <div class="export-opcoes">
+                    <button type="button" id="btn-export-filtrados" class="btn-export-opcao" onclick="confirmarExport('filtrados')"></button>
+                    <button type="button" id="btn-export-todos" class="btn-export-opcao secundario" onclick="confirmarExport('todos')"></button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel-modal" onclick="fecharModalExport()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
     <div id="login-overlay" class="login-wrapper">
         <div class="login-card">
             <div class="login-header">
@@ -768,6 +792,7 @@
         const TAM_PAGINA = 40;          // linhas renderizadas por lote
         const _renderState = {};        // estado de paginacao por tabela
         const _carregado = {};          // marca quando os dados ja vieram do banco
+        const _listasFiltradas = {};    // ultima lista exibida por aba (usada na exportacao)
         const _scrollRoot = () => document.querySelector('.content-area');
         const MSG_VAZIO = {
             'tabela-demandas': 'Nenhuma demanda encontrada.',
@@ -926,6 +951,8 @@
             if (e.key === 'Escape') {
                 const m = document.getElementById('modal-saida');
                 if (m && m.classList.contains('show')) window.fecharModalSaida();
+                const me = document.getElementById('modal-export');
+                if (me && me.classList.contains('show')) window.fecharModalExport();
             }
         });
 
@@ -1249,6 +1276,7 @@
                 const bateTexto = !filtroTexto || textoGeral.includes(filtroTexto);
                 return bateData && bateStatus && bateTexto;
             });
+            _listasFiltradas.demandas = lista;
             document.getElementById('dash-demanda-total').innerText = lista.length;
             document.getElementById('dash-demanda-pendente').innerText = lista.filter(d => d.status === 'Pendente').length;
             document.getElementById('dash-demanda-andamento').innerText = lista.filter(d => d.status === 'Em Andamento').length;
@@ -1396,7 +1424,8 @@
                 const bateTermo = !termo || v.nome.toLowerCase().includes(termo) || (v.empresa && v.empresa.toLowerCase().includes(termo)); 
                 return bateMes && bateTermo; 
             });
-            document.getElementById('dash-visitantes-ativos').innerText = lista.filter(v => v.status === 'Ativo').length; 
+            _listasFiltradas.visitantes = lista;
+            document.getElementById('dash-visitantes-ativos').innerText = lista.filter(v => v.status === 'Ativo').length;
             document.getElementById('dash-visitantes-total').innerText = lista.length;
             const defaultIcon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Cpath fill='%23d1d5db' d='M50 50c-13.8 0-25-11.2-25-25s11.2-25 25-25 25 11.2 25 25-11.2 25-25 25zm0 10c16.7 0 50 8.3 50 25v15H0v-15c0-16.7 33.3-25 50-25z'/%3E%3C/svg%3E";
             renderIncremental('tabela-visitantes', lista, (v) => {
@@ -1499,7 +1528,8 @@
                 const bTexto = !busca || (f.motorista+f.carro+f.setor).toLowerCase().includes(busca); 
                 return bData && bTexto; 
             });
-            document.getElementById('dash-frota-total').innerText = lista.length; 
+            _listasFiltradas.veiculos = lista;
+            document.getElementById('dash-frota-total').innerText = lista.length;
             document.getElementById('dash-frota-estacionados').innerText = lista.filter(f => f.status === 'Aberto').length; 
             document.getElementById('dash-servidor-count').innerText = lista.filter(f => f.tipo === 'servidor').length; 
             document.getElementById('dash-visitante-count').innerText = lista.filter(f => f.tipo === 'visitante').length;
@@ -1591,7 +1621,8 @@
                 const evData = ev.data || ''; const bData = (!mes || evData.startsWith(mes)) && (!dia || evData.startsWith(dia)); 
                 const bTexto = !busca || (ev.nome + ev.organizador + ev.local).toLowerCase().includes(busca); return bData && bTexto; 
             });
-            document.getElementById('dash-eventos-qtd').innerText = lista.length; 
+            _listasFiltradas.eventos = lista;
+            document.getElementById('dash-eventos-qtd').innerText = lista.length;
             const qtdInterno = lista.filter(e => e.tipo === 'Interno').length; const qtdExterno = lista.filter(e => e.tipo === 'Externo').length; 
             document.getElementById('dash-eventos-interno').innerText = qtdInterno; document.getElementById('dash-eventos-externo').innerText = qtdExterno; 
             const totalPublico = lista.reduce((sum, ev) => sum + (parseInt(ev.publico) || 0), 0); document.getElementById('dash-eventos-publico').innerText = totalPublico;
@@ -1688,6 +1719,7 @@
                 const bStat = !stat || o.status === stat; 
                 const bTxt = !termo || (o.unidade+o.local+o.categoria+o.descricao+o.responsavel+(o.numero||'')).toLowerCase().includes(termo); return bMes && bStat && bTxt; 
             });
+            _listasFiltradas.ocorrencias = lista;
             document.getElementById('dash-oco-total').innerText = lista.length; document.getElementById('dash-oco-abertas').innerText = lista.filter(o => o.status === 'Aberta').length; document.getElementById('dash-oco-tratativa').innerText = lista.filter(o => o.status === 'Em Tratativa').length; document.getElementById('dash-oco-encerradas').innerText = lista.filter(o => o.status === 'Encerrada').length;
             renderIncremental('tabela-ocorrencias', lista, (o) => {
                 o = escObj(o);
@@ -1984,25 +2016,67 @@
         }
 
         /* --- EXPORTAÇÃO --- */
-        window.exportarParaExcel = async function(tipo) {
+        // --- EXPORTACAO EXCEL (pergunta o escopo quando ha filtros ativos) ---
+        function _dadosCompletosExport(tipo) {
+            if (tipo === 'demandas') return demandas;
+            if (tipo === 'visitantes') return visitantes;
+            if (tipo === 'veiculos') return frota;
+            if (tipo === 'eventos') return eventos;
+            if (tipo === 'ocorrencias') return ocorrencias;
+            return [];
+        }
+        const _rotulosExport = { demandas: 'Demandas', visitantes: 'Recepção', veiculos: 'Garagem', eventos: 'Eventos', ocorrencias: 'Ocorrências' };
+        let _exportTipo = null;
+
+        window.exportarParaExcel = function(tipo) {
+            const completos = _dadosCompletosExport(tipo);
+            if (completos.length === 0) { alert("Não há dados para exportar nesta tabela."); return; }
+            const filtrados = _listasFiltradas[tipo] || completos;
+            if (filtrados.length < completos.length) {
+                // Filtros ativos reduzindo a lista: pergunta ao usuario o escopo.
+                _exportTipo = tipo;
+                document.getElementById('modal-export-msg').innerText = 'Há filtros ativos em ' + (_rotulosExport[tipo] || tipo) + '. O que deseja exportar?';
+                document.getElementById('btn-export-filtrados').innerHTML = '<i class="fas fa-filter"></i> Somente os filtrados (' + filtrados.length + ')';
+                document.getElementById('btn-export-todos').innerHTML = '<i class="fas fa-database"></i> Todos os registros (' + completos.length + ')';
+                document.getElementById('modal-export').classList.add('show');
+                return;
+            }
+            _executarExportacao(tipo, completos);
+        }
+
+        window.fecharModalExport = function() {
+            document.getElementById('modal-export').classList.remove('show');
+            _exportTipo = null;
+        }
+
+        window.confirmarExport = function(modo) {
+            if (!_exportTipo) return;
+            const tipo = _exportTipo;
+            const completos = _dadosCompletosExport(tipo);
+            const dados = (modo === 'filtrados') ? (_listasFiltradas[tipo] || completos) : completos;
+            fecharModalExport();
+            _executarExportacao(tipo, dados);
+        }
+
+        async function _executarExportacao(tipo, dadosRaw) {
             try { await garantirXLSX(); }
             catch (e) { alert('Nao foi possivel carregar o modulo de exportacao. Verifique sua conexao e tente novamente.'); return; }
-            let dadosRaw = []; let nomeArquivo = ""; let dadosFormatados = [];
+            let nomeArquivo = ""; let dadosFormatados = [];
             
             if (tipo === 'demandas') { 
-                dadosRaw = demandas; nomeArquivo = "Relatorio_Demandas.xlsx"; 
+                nomeArquivo = "Relatorio_Demandas.xlsx";
                 dadosFormatados = dadosRaw.map(d => ({ "Data": formatarData(d.data), "O.S.": d.numeroOS || "-", "Prioridade": d.prioridade, "Título": d.titulo, "Setor": d.setor, "Solicitante": d.solicitante, "Execução": d.execucao || "-", "Materiais Utilizados": d.materiais || "-", "Status": d.status, "Conclusão": d.dataFim ? formatarDataHora(d.dataFim) : "-" })); 
             } else if (tipo === 'visitantes') { 
-                dadosRaw = visitantes; nomeArquivo = "Relatorio_Visitantes.xlsx"; 
+                nomeArquivo = "Relatorio_Visitantes.xlsx";
                 dadosFormatados = dadosRaw.map(v => ({ "Status": v.status, "Nome": v.nome, "Empresa": v.empresa || '-', "Responsável": v.responsavel, "Finalidade": v.finalidade, "Entrada": formatarDataHora(v.entrada), "Saída": v.saida ? formatarDataHora(v.saida) : "-" })); 
             } else if (tipo === 'veiculos') { 
-                dadosRaw = frota; nomeArquivo = "Relatorio_Garagem.xlsx"; 
+                nomeArquivo = "Relatorio_Garagem.xlsx";
                 dadosFormatados = dadosRaw.map(f => ({ "Status": f.status, "Tipo": f.tipo, "Condutor": f.motorista, "Veículo": f.carro, "Setor/Destino": f.setor, "Entrada": formatarDataHora(f.horaInicial), "KM Entrada": f.kmInicial, "Saída": f.horaFinal ? formatarDataHora(f.horaFinal) : "-", "KM Saída": f.kmFinal || "-" })); 
             } else if (tipo === 'eventos') { 
-                dadosRaw = eventos; nomeArquivo = "Relatorio_Eventos.xlsx"; 
+                nomeArquivo = "Relatorio_Eventos.xlsx";
                 dadosFormatados = dadosRaw.map(e => ({ "Data": formatarData(e.data), "Evento": e.nome, "Tipo": e.tipo, "Organizador": e.organizador, "Local": e.local, "Público Est.": e.publico, "Coffee Break": e.coffee ? "Sim" : "Não", "Observações": e.obs })); 
             } else if (tipo === 'ocorrencias') { 
-                dadosRaw = ocorrencias; nomeArquivo = "Relatorio_Ocorrencias.xlsx"; 
+                nomeArquivo = "Relatorio_Ocorrencias.xlsx";
                 dadosFormatados = dadosRaw.map(o => ({ "Nº do Registro": o.numero || "-", "Data": formatarDataHora(o.data), "Unidade": o.unidade, "Local": o.local, "Contratada": o.contratada || "-", "Categoria": o.categoria, "Gravidade": o.gravidade, "Descrição": o.descricao, "Responsável": o.responsavel, "Status": o.status, "Encerramento": o.dataEncerramento ? formatarDataHora(o.dataEncerramento) : "-" })); 
             }
             
