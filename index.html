@@ -136,6 +136,12 @@
         label { display: block; font-size: 0.85rem; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px; }
         input, select, textarea { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: var(--radius-md); font-size: 0.9rem; background-color: #f9fafb; transition: var(--transition); }
         input:focus, select:focus, textarea:focus { background-color: white; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        /* Radios/checkboxes NAO herdam o estilo de campo de texto: sem width 100%,
+           padding, borda, fundo, sombra de foco ou transicao — corrige o hitbox
+           esticado, o "brilho" retangular ao clicar e o atraso na marcacao. */
+        input[type="radio"], input[type="checkbox"] { width: auto; min-width: 0; padding: 0; border: none; background: transparent; border-radius: 0; transition: none; accent-color: var(--primary); cursor: pointer; flex-shrink: 0; }
+        input[type="radio"]:focus, input[type="checkbox"]:focus { background: transparent; border: none; box-shadow: none; }
+        input[type="radio"]:focus-visible, input[type="checkbox"]:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
         .btn-container { display: flex; gap: 12px; margin-top: 20px; }
         button { font-family: 'Inter', sans-serif; cursor: pointer; }
         button.btn-primary { background-color: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: var(--radius-md); font-weight: 500; flex: 1; transition: var(--transition); }
@@ -1137,7 +1143,7 @@
 
         function formatarDataHora(dataISO) { 
             if(!dataISO) return ''; 
-            return new Date(dataISO).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}); 
+            return new Date(dataISO).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}); 
         }
 
         // --- INTEGRAÇÃO WHATSAPP (DEMANDAS E OCORRÊNCIAS) ---
@@ -1288,7 +1294,7 @@
                 let badgeClass = d.status === 'Pendente' ? 'bg-pendente' : (d.status === 'Em Andamento' ? 'bg-andamento' : 'bg-concluido');
                 let tempoDisplay = d.status === 'Concluído' && d.dataFim ? `<span class="time-badge"><i class="fas fa-stopwatch"></i> ${calcularTempoDecorrido(d.data, d.dataFim)}</span>` : `<span class="time-badge"><i class="fas fa-hourglass-half"></i> ${calcularTempoDecorrido(d.data)}</span>`;
                 const btnAvancar = d.status !== 'Concluído' ? `<button onclick="avancarStatus('${d.id}')" class="action-btn btn-check" title="Avançar"><i class="fas fa-arrow-right"></i></button>` : '';
-                const dataFormatada = new Date(d.data).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
+                const dataFormatada = new Date(d.data).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
                 
                 tr.innerHTML = `<td>${dataFormatada}</td><td><span class="badge" style="background:#94a3b8">${d.prioridade}</span></td><td><strong>${d.titulo}</strong><br><small style="color:var(--text-secondary)">${d.solicitante} - ${d.setor}</small></td><td><span class="badge ${badgeClass}">${d.status}</span></td><td>${tempoDisplay}</td><td style="min-width:180px">${btnAvancar}<button onclick="enviarWhatsAppDemanda('${d.id}')" class="action-btn btn-whatsapp" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button><button onclick="imprimirOS('${d.id}')" class="action-btn btn-print" title="Imprimir O.S."><i class="fas fa-print"></i></button><button onclick="editarDemanda('${d.id}')" class="action-btn btn-edit"><i class="fas fa-pen"></i></button><button onclick="deletarDemanda('${d.id}')" class="action-btn btn-delete"><i class="fas fa-trash"></i></button></td>`;
                 return tr;
@@ -1432,8 +1438,8 @@
                 v = escObj(v);
                 const tr = document.createElement('tr');
                 const badge = v.status === 'Ativo' ? '<span class="badge bg-visitante-ativo">NA EMPRESA</span>' : '<span class="badge bg-saiu">SAIU</span>';
-                const dataEnt = new Date(v.entrada).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
-                const dataSai = v.saida ? new Date(v.saida).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '-';
+                const dataEnt = new Date(v.entrada).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+                const dataSai = v.saida ? new Date(v.saida).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '-';
                 const btnBaixa = v.status === 'Ativo' ? `<button onclick="baixaVisitante('${v.id}')" class="action-btn btn-baixa" title="Registrar Saída"><i class="fas fa-sign-out-alt"></i></button>` : '<i class="fas fa-check" style="color:var(--success); margin-right:5px"></i>';
                 let btnExcluir = ''; if (currentUserRole === 'admin') btnExcluir = `<button onclick="deletarVisitante('${v.id}')" class="action-btn btn-delete" title="Excluir"><i class="fas fa-trash"></i></button>`;
                 const imgTag = `<img src="${v.foto || defaultIcon}" class="avatar-table" loading="lazy" decoding="async">`;
@@ -1538,8 +1544,8 @@
                 const tr = document.createElement('tr');
                 const badge = f.status === 'Aberto' ? '<span class="badge bg-estacionado">ESTACIONADO</span>' : '<span class="badge bg-saiu">FINALIZADO</span>';
                 const icon = f.tipo === 'servidor' ? '<i class="fas fa-id-badge" style="color:var(--servidor)"></i>' : '<i class="fas fa-user-tag" style="color:var(--visitante)"></i>';
-                const dIn = new Date(f.horaInicial).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
-                const dOut = f.horaFinal ? new Date(f.horaFinal).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '-';
+                const dIn = new Date(f.horaInicial).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+                const dOut = f.horaFinal ? new Date(f.horaFinal).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '-';
                 const btnBaixa = f.status === 'Aberto' ? `<button onclick="baixaVeiculo('${f.id}')" class="action-btn btn-baixa"><i class="fas fa-sign-out-alt"></i></button>` : '<i class="fas fa-check" style="color:var(--success); margin-right:5px"></i>';
                 let btnExcluir = ''; if (currentUserRole === 'admin') btnExcluir = `<button onclick="deletarVeiculo('${f.id}')" class="action-btn btn-delete" title="Excluir"><i class="fas fa-trash"></i></button>`;
                 tr.innerHTML = `<td>${badge}</td><td><small>${icon} ${f.tipo}</small></td><td><strong>${f.motorista}</strong><br><small style="color:var(--text-secondary)">${f.contato||''}</small></td><td>${f.carro}</td><td>${f.setor||'-'}</td><td style="font-size:0.85rem">Ent: ${dIn}<br>Sai: ${dOut}</td><td style="min-width:140px">${btnBaixa}<button onclick="editarVeiculo('${f.id}')" class="action-btn btn-edit"><i class="fas fa-pen"></i></button>${btnExcluir}</td>`;
