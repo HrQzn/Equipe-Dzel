@@ -836,8 +836,14 @@
             const fim = Math.min(st.exibidos + TAM_PAGINA, st.lista.length);
             const frag = document.createDocumentFragment();
             for (let i = st.exibidos; i < fim; i++) {
-                const tr = st.construir(st.lista[i], i);
-                if (tr) frag.appendChild(tr);
+                // Isolamento por linha: um registro defeituoso e pulado em vez de
+                // abortar a renderizacao da tabela inteira.
+                try {
+                    const tr = st.construir(st.lista[i], i);
+                    if (tr) frag.appendChild(tr);
+                } catch (e) {
+                    console.error('Registro ignorado (erro ao montar linha de ' + tableId + '):', e, st.lista[i]);
+                }
             }
             tbody.appendChild(frag);
             st.exibidos = fim;
@@ -978,10 +984,20 @@
         };
         let currentUserRole = null;
 
+        // Boot resiliente: um valor corrompido no localStorage nao pode derrubar
+        // o modulo inteiro (deixaria ate o login sem funcionar).
         const usuarioSalvo = localStorage.getItem('zeladoria_user');
         if (usuarioSalvo) {
-            const user = JSON.parse(usuarioSalvo);
-            setTimeout(() => { currentUserRole = user.role; iniciarSistema(user); }, 100);
+            try {
+                const user = JSON.parse(usuarioSalvo);
+                if (user && user.role && user.nome) {
+                    setTimeout(() => { currentUserRole = user.role; iniciarSistema(user); }, 100);
+                } else {
+                    localStorage.removeItem('zeladoria_user');
+                }
+            } catch (e) {
+                localStorage.removeItem('zeladoria_user');
+            }
         }
 
         window.checkEnter = function(e) { 
@@ -991,7 +1007,9 @@
         window.fazerLogin = function() {
             const userKey = document.getElementById('login-user').value.trim().toLowerCase();
             const passOriginal = document.getElementById('login-pass').value.trim().toLowerCase(); 
-            const passDigitadaMask = btoa(passOriginal);
+            let passDigitadaMask = null;
+            try { passDigitadaMask = btoa(passOriginal); }
+            catch (e) { document.getElementById('login-error').style.display = 'flex'; return; }
 
             if (CREDENCIAIS[userKey] && CREDENCIAIS[userKey].passMask === passDigitadaMask) {
                 currentUserRole = CREDENCIAIS[userKey].role;
@@ -1290,7 +1308,7 @@
         });
         function fecharWebcam() { if (stream) { stream.getTracks().forEach(track => track.stop()); stream = null; } webcamContainer.style.display = 'none'; btnsFotoWrapper.style.display = 'flex'; imgPreview.style.display = 'block'; }
         document.getElementById('btn-close-cam').addEventListener('click', fecharWebcam);
-        document.getElementById('btn-snap').addEventListener('click', () => { if (!stream) return; const canvas = document.createElement('canvas'); const maxWidth = 500; const scale = maxWidth / videoElement.videoWidth; const newWidth = (videoElement.videoWidth > maxWidth) ? maxWidth : videoElement.videoWidth; const newHeight = (videoElement.videoWidth > maxWidth) ? videoElement.videoHeight * scale : videoElement.videoHeight; canvas.width = newWidth; canvas.height = newHeight; const ctx = canvas.getContext('2d'); ctx.translate(newWidth, 0); ctx.scale(-1, 1); ctx.drawImage(videoElement, 0, 0, newWidth, newHeight); const base64String = canvas.toDataURL('image/jpeg', 0.7); document.getElementById('vis-foto-base64').value = base64String; document.getElementById('vis-preview').src = base64String; fecharWebcam(); });
+        document.getElementById('btn-snap').addEventListener('click', () => { if (!stream || !videoElement.videoWidth) return; const canvas = document.createElement('canvas'); const maxWidth = 500; const scale = maxWidth / videoElement.videoWidth; const newWidth = (videoElement.videoWidth > maxWidth) ? maxWidth : videoElement.videoWidth; const newHeight = (videoElement.videoWidth > maxWidth) ? videoElement.videoHeight * scale : videoElement.videoHeight; canvas.width = newWidth; canvas.height = newHeight; const ctx = canvas.getContext('2d'); ctx.translate(newWidth, 0); ctx.scale(-1, 1); ctx.drawImage(videoElement, 0, 0, newWidth, newHeight); const base64String = canvas.toDataURL('image/jpeg', 0.7); document.getElementById('vis-foto-base64').value = base64String; document.getElementById('vis-preview').src = base64String; fecharWebcam(); });
         const fileInput = document.getElementById('vis-foto-input');
         fileInput.addEventListener('change', function(event) { const file = event.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = function(e) { const img = new Image(); img.onload = function() { const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d'); const maxWidth = 500; const scale = maxWidth / img.width; const newWidth = (img.width > maxWidth) ? maxWidth : img.width; const newHeight = (img.width > maxWidth) ? img.height * scale : img.height; canvas.width = newWidth; canvas.height = newHeight; ctx.drawImage(img, 0, 0, newWidth, newHeight); const base64String = canvas.toDataURL('image/jpeg', 0.7); document.getElementById('vis-foto-base64').value = base64String; document.getElementById('vis-preview').src = base64String; }; img.src = e.target.result; }; reader.readAsDataURL(file); } });
 
@@ -1321,7 +1339,7 @@
                     else { novoVisitante.saida = new Date().toISOString(); }
                 }
             }
-            set(ref(db, 'visitantes/' + id), novoVisitante).then(() => cancelarEdicaoVisitante());
+            set(ref(db, 'visitantes/' + id), novoVisitante).then(() => cancelarEdicaoVisitante()).catch((error) => alert("Erro ao salvar visitante: " + error));
         });
 
         onValue(ref(db, 'visitantes'), (snapshot) => {
@@ -1335,7 +1353,7 @@
             const v = visitantes.find(i => String(i.id) === String(id)); if(!v) return;
             document.getElementById('visitante-id-edit').value = v.id;
             document.getElementById('vis-nome').value = v.nome; 
-            document.getElementById('vis-empresa').value = v.empresa; 
+            document.getElementById('vis-empresa').value = v.empresa || '';
             document.getElementById('vis-responsavel').value = v.responsavel; 
             document.getElementById('vis-finalidade').value = v.finalidade; 
             document.getElementById('vis-entrada').value = v.entrada;
@@ -1399,18 +1417,19 @@
 
         // --- 3. VEICULOS --- 
         window.atualizarLabels = function() {
-            const tipo = document.querySelector('input[name="tipoFluxo"]:checked').value; 
+            const tipo = document.querySelector('input[name="tipoFluxo"]:checked').value;
             const btn = document.getElementById('btn-submit-veiculo');
-            if (!document.getElementById('veiculo-id-edit').value) btn.innerText = "Registrar Entrada";
+            const emEdicao = !!document.getElementById('veiculo-id-edit').value;
+            if (!emEdicao) btn.innerText = "Registrar Entrada";
             const lblSetor = document.getElementById('lbl-veiculo-setor');
-            if (tipo === 'servidor') { 
-                btn.style.backgroundColor = "var(--servidor)"; 
-                document.getElementById('veiculo-setor').placeholder = "Setor de Origem"; 
-                if(lblSetor) lblSetor.innerText = "Setor Origem"; 
-            } else { 
-                btn.style.backgroundColor = "var(--visitante)"; 
-                document.getElementById('veiculo-setor').placeholder = "Empresa / Setor Visitado"; 
-                if(lblSetor) lblSetor.innerText = "Setor/Empresa"; 
+            if (tipo === 'servidor') {
+                if (!emEdicao) btn.style.backgroundColor = "var(--servidor)";
+                document.getElementById('veiculo-setor').placeholder = "Setor de Origem";
+                if(lblSetor) lblSetor.innerText = "Setor Origem";
+            } else {
+                if (!emEdicao) btn.style.backgroundColor = "var(--visitante)";
+                document.getElementById('veiculo-setor').placeholder = "Empresa / Setor Visitado";
+                if(lblSetor) lblSetor.innerText = "Setor/Empresa";
             }
         }
         
@@ -1424,9 +1443,10 @@
             if(idEdicao) { 
                 const ant = frota.find(f => String(f.id) === String(id)); 
                 if (novoVeiculo.status === 'Aberto') { novoVeiculo.horaFinal = null; novoVeiculo.kmFinal = null; } 
-                else if (ant && ant.horaFinal) { novoVeiculo.horaFinal = ant.horaFinal; novoVeiculo.kmFinal = ant.kmFinal; } 
+                else if (ant && ant.horaFinal) { novoVeiculo.horaFinal = ant.horaFinal; novoVeiculo.kmFinal = ant.kmFinal; }
+                else { novoVeiculo.horaFinal = new Date().toISOString(); }
             }
-            set(ref(db, 'frota/' + id), novoVeiculo).then(() => { cancelarEdicaoVeiculo(); window.atualizarLabels(); });
+            set(ref(db, 'frota/' + id), novoVeiculo).then(() => { cancelarEdicaoVeiculo(); window.atualizarLabels(); }).catch((error) => alert("Erro ao salvar veículo: " + error));
         });
         
         onValue(ref(db, 'frota'), (snapshot) => {
@@ -1443,12 +1463,12 @@
             document.getElementById('veiculo-motorista').value = f.motorista; 
             document.getElementById('veiculo-setor').value = f.setor || ''; 
             document.getElementById('veiculo-contato').value = f.contato || ''; 
-            document.getElementById('veiculo-destino').value = f.destino; 
+            document.getElementById('veiculo-destino').value = f.destino || '';
             document.getElementById('veiculo-km-saida').value = f.kmInicial; 
             document.getElementById('veiculo-hora-saida').value = f.horaInicial;
             if (f.tipo === 'servidor') document.getElementById('radio-servidor').checked = true; else document.getElementById('radio-visitante').checked = true;
             document.getElementById('titulo-form-veiculo').innerHTML = '<i class="fas fa-edit"></i> Editando Veículo'; 
-            const btn = document.getElementById('btn-submit-veiculo'); btn.innerText = "Salvar Alterações"; btn.style.backgroundColor = "var(--edit)";
+            const btn = document.getElementById('btn-submit-veiculo'); btn.innerText = "Salvar Alterações"; btn.style.backgroundColor = "var(--warning)";
             document.getElementById('btn-cancel-veiculo').style.display = "block"; 
             document.getElementById('container-status-veiculo').style.display = "block"; 
             document.getElementById('veiculo-status-edit').value = f.status;
@@ -1545,7 +1565,7 @@
             document.getElementById('evento-id-edit').value = ev.id; document.getElementById('evento-nome').value = ev.nome; document.getElementById('evento-organizador').value = ev.organizador; document.getElementById('evento-data').value = ev.data; document.getElementById('evento-publico').value = ev.publico; document.getElementById('evento-local').value = ev.local; document.getElementById('evento-coffee').checked = ev.coffee || false; document.getElementById('evento-obs').value = ev.obs || "";
             const radios = document.getElementsByName('tipoEvento'); for(let i=0; i<radios.length; i++) { if(radios[i].value === ev.tipo) radios[i].checked = true; }
             document.getElementById('titulo-form-evento').innerHTML = '<i class="fas fa-edit"></i> Editando Evento'; 
-            const btn = document.getElementById('btn-submit-evento'); btn.innerText = "Salvar Alterações"; btn.style.backgroundColor = "var(--edit)"; 
+            const btn = document.getElementById('btn-submit-evento'); btn.innerText = "Salvar Alterações"; btn.style.backgroundColor = "var(--warning)"; 
             document.getElementById('btn-cancel-evento').style.display = "block"; document.getElementById('eventos').scrollIntoView({behavior: 'smooth'});
         }
         
@@ -1679,7 +1699,7 @@
                 
                 const textoTitulo = o.numero ? `<strong>#${o.numero} - ${o.categoria}</strong>` : `<strong>${o.categoria}</strong>`;
 
-                tr.innerHTML = `<td>${formatarDataHora(o.data)}</td><td>${badgeGrav}</td><td>${textoTitulo}<br><small>${o.unidade} - ${o.local}</small></td><td>${o.descricao.substring(0,50)}...<br><small style="color:var(--text-secondary)">Resp: ${o.responsavel}</small></td><td>${badgeStat}</td><td>${tempo}</td><td style="min-width:180px"><button onclick="enviarWhatsAppOcorrencia('${o.id}')" class="action-btn btn-whatsapp" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button><button onclick="imprimirRO('${o.id}')" class="action-btn btn-print" title="Imprimir R.O."><i class="fas fa-print"></i></button><button onclick="editarOcorrencia('${o.id}')" class="action-btn btn-edit"><i class="fas fa-pen"></i></button>${btnExcluir}</td>`;
+                tr.innerHTML = `<td>${formatarDataHora(o.data)}</td><td>${badgeGrav}</td><td>${textoTitulo}<br><small>${o.unidade} - ${o.local}</small></td><td>${(o.descricao || '').substring(0,50)}...<br><small style="color:var(--text-secondary)">Resp: ${o.responsavel}</small></td><td>${badgeStat}</td><td>${tempo}</td><td style="min-width:180px"><button onclick="enviarWhatsAppOcorrencia('${o.id}')" class="action-btn btn-whatsapp" title="Enviar por WhatsApp"><i class="fab fa-whatsapp"></i></button><button onclick="imprimirRO('${o.id}')" class="action-btn btn-print" title="Imprimir R.O."><i class="fas fa-print"></i></button><button onclick="editarOcorrencia('${o.id}')" class="action-btn btn-edit"><i class="fas fa-pen"></i></button>${btnExcluir}</td>`;
                 return tr;
             });
         }
